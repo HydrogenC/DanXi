@@ -661,73 +661,74 @@ class HomePageState extends State<HomePage> with WidgetsBindingObserver {
       showDebugBtn(context);
     }
 
-    return Obx(
-      () => PlatformScaffold(
-        body: LazyLoadIndexedStack(
-          index: _pageIndex.value,
-          children: _subpage,
-        ),
+    return Obx(() => PageWithTab(
+          child: PlatformScaffold(
+            body: LazyLoadIndexedStack(
+              index: _pageIndex.value,
+              children: _subpage,
+            ),
 
-        // 2021-5-19 @w568w:
-        // Override the builder to prevent the repeatedly built states on iOS.
-        // I don't know why it works...
-        cupertinoTabChildBuilder: (_, index) => _subpage[index],
-        bottomNavBar: PlatformNavBarM3(
-          items: [
-            // Don't show Dashboard in visitor mode
-            if (StateProvider.personInfo.value?.group != UserGroup.VISITOR)
-              BottomNavigationBarItem(
-                icon: PlatformX.isMaterial(context)
-                    ? const Icon(Icons.dashboard)
-                    : const Icon(CupertinoIcons.square_stack_3d_up_fill),
-                label: S.of(context).dashboard,
-              ),
-            if (!SettingsProvider.getInstance().hideHole)
-              BottomNavigationBarItem(
-                icon: PlatformX.isMaterial(context)
-                    ? const Icon(Icons.forum)
-                    : const Icon(CupertinoIcons.text_bubble),
-                label: S.of(context).forum,
-              ),
-            BottomNavigationBarItem(
-              icon: PlatformX.isMaterial(context)
-                  ? const Icon(Icons.egg_alt)
-                  : const Icon(CupertinoIcons.book),
-              label: S.of(context).curriculum,
-            ),
-            // Don't show Timetable in visitor mode
-            if (StateProvider.personInfo.value?.group != UserGroup.VISITOR)
-              BottomNavigationBarItem(
-                icon: PlatformX.isMaterial(context)
-                    ? const Icon(Icons.calendar_today)
-                    : const Icon(CupertinoIcons.calendar),
-                label: S.of(context).timetable,
-              ),
-            BottomNavigationBarItem(
-              icon: PlatformX.isMaterial(context)
-                  ? const Icon(Icons.settings)
-                  : const Icon(CupertinoIcons.gear_alt),
-              label: S.of(context).settings,
-            ),
-          ],
-          currentIndex: _pageIndex.value,
-          itemChanged: (index) {
-            if (index != _pageIndex.value) {
-              // Dispatch [SubpageViewState] events.
-              for (int i = 0; i < _subpage.length; i++) {
-                if (index != i) {
-                  _subpage[i].onViewStateChanged(SubpageViewState.INVISIBLE);
+            // 2021-5-19 @w568w:
+            // Override the builder to prevent the repeatedly built states on iOS.
+            // I don't know why it works...
+            cupertinoTabChildBuilder: (_, index) => _subpage[index],
+            bottomNavBar: PlatformNavBarM3(
+              items: [
+                // Don't show Dashboard in visitor mode
+                if (StateProvider.personInfo.value?.group != UserGroup.VISITOR)
+                  BottomNavigationBarItem(
+                    icon: PlatformX.isMaterial(context)
+                        ? const Icon(Icons.dashboard)
+                        : const Icon(CupertinoIcons.square_stack_3d_up_fill),
+                    label: S.of(context).dashboard,
+                  ),
+                if (!SettingsProvider.getInstance().hideHole)
+                  BottomNavigationBarItem(
+                    icon: PlatformX.isMaterial(context)
+                        ? const Icon(Icons.forum)
+                        : const Icon(CupertinoIcons.text_bubble),
+                    label: S.of(context).forum,
+                  ),
+                BottomNavigationBarItem(
+                  icon: PlatformX.isMaterial(context)
+                      ? const Icon(Icons.egg_alt)
+                      : const Icon(CupertinoIcons.book),
+                  label: S.of(context).curriculum,
+                ),
+                // Don't show Timetable in visitor mode
+                if (StateProvider.personInfo.value?.group != UserGroup.VISITOR)
+                  BottomNavigationBarItem(
+                    icon: PlatformX.isMaterial(context)
+                        ? const Icon(Icons.calendar_today)
+                        : const Icon(CupertinoIcons.calendar),
+                    label: S.of(context).timetable,
+                  ),
+                BottomNavigationBarItem(
+                  icon: PlatformX.isMaterial(context)
+                      ? const Icon(Icons.settings)
+                      : const Icon(CupertinoIcons.gear_alt),
+                  label: S.of(context).settings,
+                ),
+              ],
+              currentIndex: _pageIndex.value,
+              itemChanged: (index) {
+                if (index != _pageIndex.value) {
+                  // Dispatch [SubpageViewState] events.
+                  for (int i = 0; i < _subpage.length; i++) {
+                    if (index != i) {
+                      _subpage[i]
+                          .onViewStateChanged(SubpageViewState.INVISIBLE);
+                    }
+                  }
+                  _subpage[index].onViewStateChanged(SubpageViewState.VISIBLE);
+                  _pageIndex.value = index;
+                } else {
+                  _subpage[index].onDoubleTapOnTab();
                 }
-              }
-              _subpage[index].onViewStateChanged(SubpageViewState.VISIBLE);
-              _pageIndex.value = index;
-            } else {
-              _subpage[index].onDoubleTapOnTab();
-            }
-          },
-        ),
-      ),
-    );
+              },
+            ),
+          ),
+        ));
   }
 
   @override

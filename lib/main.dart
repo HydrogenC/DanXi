@@ -19,7 +19,9 @@ import 'dart:async';
 import 'dart:ui';
 
 import 'package:bitsdojo_window/bitsdojo_window.dart';
+import 'package:dan_xi/feature/base_feature.dart';
 import 'package:dan_xi/feature/feature_map.dart';
+import 'package:dan_xi/feature/welcome_feature.dart';
 import 'package:dan_xi/generated/l10n.dart';
 import 'package:dan_xi/page/danke/course_group_detail.dart';
 import 'package:dan_xi/page/danke/course_review_editor.dart';
@@ -215,16 +217,6 @@ class DanxiApp extends StatelessWidget {
         // TODO: REIMPLEMENT UPDATE LOGIC
         MaterialColor primarySwatch = generateMaterialColor(
             color: Color(SettingsProvider.getInstance().primarySwatch_V2));
-
-        // Type has to be specified explicitly since it cannot correctly auto detect
-        const List<LocalizationsDelegate<dynamic>> localeDelegates = [
-          // [S] is a generated class that contains all the strings in the
-          // app for l10n.
-          S.delegate,
-          GlobalMaterialLocalizations.delegate,
-          GlobalWidgetsLocalizations.delegate,
-          GlobalCupertinoLocalizations.delegate
-        ];
 
         // Since we cannot use PlatformApp and GetApp together, we have to
         // manually setup the routing system of GetX

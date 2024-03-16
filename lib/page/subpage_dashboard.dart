@@ -58,7 +58,7 @@ class HomeSubpage extends PlatformSubpage<HomeSubpage> {
             Icon(PlatformX.isMaterial(cxt)
                 ? Icons.notifications
                 : CupertinoIcons.bell_circle),
-            () => smartNavigatorPush(cxt, '/announcement/list'))
+            () => Get.toNamed('/announcement/list'))
       ];
 
   @override
@@ -66,7 +66,7 @@ class HomeSubpage extends PlatformSubpage<HomeSubpage> {
         AppBarButtonItem(
             S.of(cxt).dashboard_layout,
             Text(S.of(cxt).edit, textScaleFactor: 1.2),
-            () => smartNavigatorPush(cxt, '/dashboard/reorder').then(
+            () => Get.toNamed('/dashboard/reorder')?.then(
                 (value) => RefreshHomepageEvent(onlyRefreshOrder: true).fire()))
       ];
 }
