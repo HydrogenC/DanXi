@@ -68,6 +68,7 @@ import 'package:flutter_platform_widgets/flutter_platform_widgets.dart';
 import 'package:material_color_generator/material_color_generator.dart';
 import 'package:provider/provider.dart';
 import 'package:xiao_mi_push_plugin/xiao_mi_push_plugin.dart';
+import 'package:get/get.dart';
 
 import 'common/constant.dart';
 
@@ -100,8 +101,6 @@ void main() {
   // We need to adjust the screen brightness when showing tht Fudan QR Code.
   unawaited(LazyFuture.pack(ScreenProxy.init()));
 
-  // Init SettingsProvider. SettingsProvider is a singleton class that stores
-  // all the settings of the app.
   SettingsProvider.getInstance().init().then((_) {
     SettingsProvider.getInstance().isTagSuggestionAvailable().then((value) {
       SettingsProvider.getInstance().tagSuggestionAvailable = value;
@@ -151,52 +150,38 @@ class DanxiApp extends StatelessWidget {
   /// Routes to every pages.
   /// Every route record is a function that returns a [Widget]. After registering
   //  the route, you can call [smartNavigatorPush] to navigate to the page.
-  static final Map<String, Function> routes = {
-    '/placeholder': (context, {arguments}) =>
-        ColoredBox(color: Theme.of(context).scaffoldBackgroundColor),
-    '/home': (context, {arguments}) => const HomePage(),
-    '/diagnose': (context, {arguments}) =>
-        DiagnosticConsole(arguments: arguments),
-    '/bbs/reports': (context, {arguments}) =>
-        BBSReportDetail(arguments: arguments),
-    '/card/detail': (context, {arguments}) =>
-        CardDetailPage(arguments: arguments),
-    '/card/crowdData': (context, {arguments}) =>
-        CardCrowdData(arguments: arguments),
-    '/room/detail': (context, {arguments}) =>
-        EmptyClassroomDetailPage(arguments: arguments),
-    '/bbs/postDetail': (context, {arguments}) =>
-        BBSPostDetail(arguments: arguments),
-    '/notice/aao/list': (context, {arguments}) =>
-        AAONoticesList(arguments: arguments),
-    '/about/openLicense': (context, {arguments}) =>
-        OpenSourceLicenseList(arguments: arguments),
-    '/announcement/list': (context, {arguments}) =>
-        AnnouncementList(arguments: arguments),
-    '/exam/detail': (context, {arguments}) => ExamList(arguments: arguments),
-    '/dashboard/reorder': (context, {arguments}) =>
-        DashboardReorderPage(arguments: arguments),
-    '/bbs/discussions': (context, {arguments}) =>
-        TreeHoleSubpage(arguments: arguments),
-    '/bbs/tags': (context, {arguments}) => BBSTagsPage(arguments: arguments),
-    '/bbs/fullScreenEditor': (context, {arguments}) =>
-        BBSEditorPage(arguments: arguments),
-    '/image/detail': (context, {arguments}) =>
-        ImageViewerPage(arguments: arguments),
-    '/text/detail': (context, {arguments}) =>
-        TextSelectorPage(arguments: arguments),
-    '/exam/gpa': (context, {arguments}) => GpaTablePage(arguments: arguments),
-    '/bus/detail': (context, {arguments}) => BusPage(arguments: arguments),
-    '/bbs/tags/blocklist': (context, {arguments}) =>
-        BBSHiddenTagsPreferencePage(arguments: arguments),
-    '/bbs/login': (context, {arguments}) => HoleLoginPage(arguments: arguments),
-    '/bbs/messages': (context, {arguments}) =>
-        OTMessagesPage(arguments: arguments),
-    '/bbs/search': (context, {arguments}) => OTSearchPage(arguments: arguments),
-    '/danke/courseDetail': (context, {arguments}) => CourseGroupDetail(arguments: arguments),
-    '/danke/fullScreenEditor':(context, {arguments}) =>
-        CourseReviewEditorPage(arguments: arguments)
-  };
+  static final List<GetPage<dynamic>> routes = [
+    GetPage(
+        name: '/placeholder',
+        page: () => const ColoredBox(color: Colors.blueAccent)),
+    GetPage(name: '/home', page: () => const HomePage()),
+    GetPage(name: '/diagnose', page: () => const DiagnosticConsole()),
+    GetPage(name: '/bbs/reports', page: () => const BBSReportDetail()),
+    GetPage(name: '/card/detail', page: () => CardDetailPage()),
+    GetPage(name: '/card/crowdData', page: () => CardCrowdData()),
+    GetPage(name: '/room/detail', page: () => EmptyClassroomDetailPage()),
+    GetPage(name: '/bbs/postDetail', page: () => BBSPostDetail()),
+    GetPage(name: '/notice/aao/list', page: () => AAONoticesList()),
+    GetPage(name: '/about/openLicense', page: () => OpenSourceLicenseList()),
+    GetPage(name: '/announcement/list', page: () => AnnouncementList()),
+    GetPage(name: '/exam/detail', page: () => ExamList()),
+    GetPage(name: '/dashboard/reorder', page: () => DashboardReorderPage()),
+    GetPage(name: '/bbs/discussions', page: () => TreeHoleSubpage()),
+    GetPage(name: '/bbs/tags', page: () => BBSTagsPage()),
+    GetPage(name: '/bbs/fullScreenEditor', page: () => BBSEditorPage()),
+    GetPage(name: '/image/detail', page: () => ImageViewerPage()),
+    GetPage(name: '/text/detail', page: () => TextSelectorPage()),
+    GetPage(name: '/exam/gpa', page: () => GpaTablePage()),
+    GetPage(name: '/bus/detail', page: () => BusPage()),
+    GetPage(
+        name: '/bbs/tags/blocklist', page: () => BBSHiddenTagsPreferencePage()),
+    GetPage(name: '/bbs/login', page: () => HoleLoginPage()),
+    GetPage(name: '/bbs/messages', page: () => OTMessagesPage()),
+    GetPage(name: '/bbs/search', page: () => OTSearchPage()),
+    GetPage(name: '/danke/courseDetail', page: () => CourseGroupDetail()),
+    GetPage(
+        name: '/danke/fullScreenEditor', page: () => CourseReviewEditorPage()),
+  ];
 
   const DanxiApp({super.key});
 
@@ -227,9 +212,25 @@ class DanxiApp extends StatelessWidget {
       // [DynamicThemeController] enables the app to change between dark/light
       // theme without restart on iOS.
       builder: (BuildContext context) {
-        MaterialColor primarySwatch =
-            context.select<SettingsProvider, MaterialColor>((value) =>
-                generateMaterialColor(color: Color(value.primarySwatch_V2)));
+        // TODO: REIMPLEMENT UPDATE LOGIC
+        MaterialColor primarySwatch = generateMaterialColor(
+            color: Color(SettingsProvider.getInstance().primarySwatch_V2));
+
+        // Type has to be specified explicitly since it cannot correctly auto detect
+        const List<LocalizationsDelegate<dynamic>> localeDelegates = [
+          // [S] is a generated class that contains all the strings in the
+          // app for l10n.
+          S.delegate,
+          GlobalMaterialLocalizations.delegate,
+          GlobalWidgetsLocalizations.delegate,
+          GlobalCupertinoLocalizations.delegate
+        ];
+
+        // Since we cannot use PlatformApp and GetApp together, we have to
+        // manually setup the routing system of GetX
+        Get.addPages(routes);
+        Get.smartManagement = SmartManagement.full;
+
         return DynamicThemeController(
           lightTheme: Constant.lightTheme(
               PlatformX.isCupertino(context), primarySwatch),
@@ -244,9 +245,9 @@ class DanxiApp extends StatelessWidget {
               // Fix cupertino UI text color issue by override text color
               cupertino: (context, __) => CupertinoAppData(
                   theme: CupertinoThemeData(
-                      brightness: context
-                          .select<SettingsProvider, ThemeType>(
-                              (s) => s.themeType)
+                    // TODO: REIMPLEMENT UPDATE LOGIC
+                      brightness: SettingsProvider.getInstance()
+                          .themeType
                           .getBrightness(),
                       textTheme: CupertinoTextThemeData(
                           textStyle: TextStyle(
@@ -265,28 +266,21 @@ class DanxiApp extends StatelessWidget {
                 GlobalWidgetsLocalizations.delegate,
                 GlobalCupertinoLocalizations.delegate
               ],
+              // TODO: REIMPLEMENT UPDATE LOGIC
               locale: LanguageManager.toLocale(
-                  context.watch<SettingsProvider>().language),
+                  SettingsProvider.getInstance().language),
               supportedLocales: S.delegate.supportedLocales,
               onUnknownRoute: (settings) => throw AssertionError(
                   "ERROR: onUnknownRoute() has been called inside the root navigator.\nDevelopers are not supposed to push on this Navigator. There should be something wrong in the code."),
-              home: ThemedSystemOverlay(
-                child: PlatformMasterDetailApp(
-                  // Configure the page route behaviour of the whole app.
-                  onGenerateRoute: (settings) {
-                    final Function? pageContentBuilder =
-                        DanxiApp.routes[settings.name!];
-                    if (pageContentBuilder != null) {
-                      return platformPageRoute(
-                          context: context,
-                          builder: (context) => pageContentBuilder(context,
-                              arguments: settings.arguments));
-                    }
-                    return null;
-                  },
-                  navigatorKey: navigatorKey,
-                ),
-              ),
+              onGenerateInitialRoutes: (String name) => [
+                PageRedirect(
+                  settings: RouteSettings(name: name),
+                ).page()
+              ],
+              onGenerateRoute: (settings) =>
+                  PageRedirect(settings: settings).page(),
+              navigatorKey: Get.key,
+              initialRoute: '/home',
             ),
           ),
         );
@@ -316,18 +310,18 @@ class DanxiApp extends StatelessWidget {
     // of OpenTreeHole.
     FDUHoleProvider.init(fduHoleProvider);
 
+    // Register some global providers
+    Get.put<SettingsProvider>(SettingsProvider.getInstance(), permanent: true);
+    Get.put<NotificationProvider>(NotificationProvider(), permanent: true);
+    Get.put<FDUHoleProvider>(FDUHoleProvider.getInstance(), permanent: true);
+
     // Wrap the whole app with [Phoenix] to enable fast reload. When user
     // logouts the Fudan UIS account, the whole app will be reloaded.
     //
     // You can call FlutterApp.restartApp() to refresh the app.
     return Phoenix(
-      // Wrap the app with a global state management provider. As the name
-      // suggests, it groups multiple providers.
-      child: MultiProvider(providers: [
-        ChangeNotifierProvider.value(value: SettingsProvider.getInstance()),
-        ChangeNotifierProvider(create: (_) => NotificationProvider()),
-        ChangeNotifierProvider.value(value: fduHoleProvider)
-      ], child: mainApp),
-    );
+        // Wrap the app with a global state management provider. As the name
+        // suggests, it groups multiple providers.
+        child: mainApp);
   }
 }

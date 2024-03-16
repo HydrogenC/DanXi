@@ -56,6 +56,7 @@ import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_platform_widgets/flutter_platform_widgets.dart';
+import 'package:get/get.dart';
 import 'package:lazy_load_indexed_stack/lazy_load_indexed_stack.dart';
 import 'package:provider/provider.dart';
 import 'package:quick_actions/quick_actions.dart';
@@ -122,7 +123,7 @@ class HomePageState extends State<HomePage> with WidgetsBindingObserver {
   bool _isErrorDialogShown = false;
 
   /// The tab page index.
-  final ValueNotifier<int> _pageIndex = ValueNotifier(0);
+  final _pageIndex = 0.obs;
 
   /// List of all of the subpages. They will be displayed as tab pages.
   List<PlatformSubpage<dynamic>> _subpage = [];
@@ -660,76 +661,70 @@ class HomePageState extends State<HomePage> with WidgetsBindingObserver {
       showDebugBtn(context);
     }
 
-    return MultiProvider(
-      providers: [ValueListenableProvider.value(value: _pageIndex)],
-      child: PageWithTab(
-        child: Consumer<int>(
-          builder: (BuildContext context, pageIndex, _) => PlatformScaffold(
-            body: LazyLoadIndexedStack(
-              index: pageIndex,
-              children: _subpage,
-            ),
+    return Obx(
+      () => PlatformScaffold(
+        body: LazyLoadIndexedStack(
+          index: _pageIndex.value,
+          children: _subpage,
+        ),
 
-            // 2021-5-19 @w568w:
-            // Override the builder to prevent the repeatedly built states on iOS.
-            // I don't know why it works...
-            cupertinoTabChildBuilder: (_, index) => _subpage[index],
-            bottomNavBar: PlatformNavBarM3(
-              items: [
-                // Don't show Dashboard in visitor mode
-                if (StateProvider.personInfo.value?.group != UserGroup.VISITOR)
-                  BottomNavigationBarItem(
-                    icon: PlatformX.isMaterial(context)
-                        ? const Icon(Icons.dashboard)
-                        : const Icon(CupertinoIcons.square_stack_3d_up_fill),
-                    label: S.of(context).dashboard,
-                  ),
-                if (!SettingsProvider.getInstance().hideHole)
-                  BottomNavigationBarItem(
-                    icon: PlatformX.isMaterial(context)
-                        ? const Icon(Icons.forum)
-                        : const Icon(CupertinoIcons.text_bubble),
-                    label: S.of(context).forum,
-                  ),
-                BottomNavigationBarItem(
-                  icon: PlatformX.isMaterial(context)
-                      ? const Icon(Icons.egg_alt)
-                      : const Icon(CupertinoIcons.book),
-                  label: S.of(context).curriculum,
-                ),
-                // Don't show Timetable in visitor mode
-                if (StateProvider.personInfo.value?.group != UserGroup.VISITOR)
-                  BottomNavigationBarItem(
-                    icon: PlatformX.isMaterial(context)
-                        ? const Icon(Icons.calendar_today)
-                        : const Icon(CupertinoIcons.calendar),
-                    label: S.of(context).timetable,
-                  ),
-                BottomNavigationBarItem(
-                  icon: PlatformX.isMaterial(context)
-                      ? const Icon(Icons.settings)
-                      : const Icon(CupertinoIcons.gear_alt),
-                  label: S.of(context).settings,
-                ),
-              ],
-              currentIndex: pageIndex,
-              itemChanged: (index) {
-                if (index != pageIndex) {
-                  // Dispatch [SubpageViewState] events.
-                  for (int i = 0; i < _subpage.length; i++) {
-                    if (index != i) {
-                      _subpage[i]
-                          .onViewStateChanged(SubpageViewState.INVISIBLE);
-                    }
-                  }
-                  _subpage[index].onViewStateChanged(SubpageViewState.VISIBLE);
-                  _pageIndex.value = index;
-                } else {
-                  _subpage[index].onDoubleTapOnTab();
-                }
-              },
+        // 2021-5-19 @w568w:
+        // Override the builder to prevent the repeatedly built states on iOS.
+        // I don't know why it works...
+        cupertinoTabChildBuilder: (_, index) => _subpage[index],
+        bottomNavBar: PlatformNavBarM3(
+          items: [
+            // Don't show Dashboard in visitor mode
+            if (StateProvider.personInfo.value?.group != UserGroup.VISITOR)
+              BottomNavigationBarItem(
+                icon: PlatformX.isMaterial(context)
+                    ? const Icon(Icons.dashboard)
+                    : const Icon(CupertinoIcons.square_stack_3d_up_fill),
+                label: S.of(context).dashboard,
+              ),
+            if (!SettingsProvider.getInstance().hideHole)
+              BottomNavigationBarItem(
+                icon: PlatformX.isMaterial(context)
+                    ? const Icon(Icons.forum)
+                    : const Icon(CupertinoIcons.text_bubble),
+                label: S.of(context).forum,
+              ),
+            BottomNavigationBarItem(
+              icon: PlatformX.isMaterial(context)
+                  ? const Icon(Icons.egg_alt)
+                  : const Icon(CupertinoIcons.book),
+              label: S.of(context).curriculum,
             ),
-          ),
+            // Don't show Timetable in visitor mode
+            if (StateProvider.personInfo.value?.group != UserGroup.VISITOR)
+              BottomNavigationBarItem(
+                icon: PlatformX.isMaterial(context)
+                    ? const Icon(Icons.calendar_today)
+                    : const Icon(CupertinoIcons.calendar),
+                label: S.of(context).timetable,
+              ),
+            BottomNavigationBarItem(
+              icon: PlatformX.isMaterial(context)
+                  ? const Icon(Icons.settings)
+                  : const Icon(CupertinoIcons.gear_alt),
+              label: S.of(context).settings,
+            ),
+          ],
+          currentIndex: _pageIndex.value,
+          itemChanged: (index) {
+            if (index != _pageIndex.value) {
+              // Dispatch [SubpageViewState] events.
+              for (int i = 0; i < _subpage.length; i++) {
+                if (index != i) {
+                  _subpage[i].onViewStateChanged(SubpageViewState.INVISIBLE);
+                }
+              }
+              _subpage[index].onViewStateChanged(SubpageViewState.VISIBLE);
+              _pageIndex.value = index;
+            } else {
+              _subpage[index].onDoubleTapOnTab();
+            }
+          },
         ),
       ),
     );

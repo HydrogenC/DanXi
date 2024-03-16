@@ -63,8 +63,7 @@ class DynamicThemeControllerState extends State<DynamicThemeController>
 
   @override
   Widget build(BuildContext context) {
-    final type =
-        context.select<SettingsProvider, ThemeType>((s) => s.themeType);
+    final type = SettingsProvider.getInstance().themeType;
 
     var effectiveBrightness = _brightness;
     if (type == ThemeType.LIGHT) {

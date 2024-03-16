@@ -96,6 +96,7 @@ dependencies:
   encrypt_shared_preferences: ^0.3.5
   device_identity: ^1.0.0
   tutorial_coach_mark: ^1.2.9
+  get: ^4.6.6
 
 
 dependency_overrides:

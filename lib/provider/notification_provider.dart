@@ -19,12 +19,13 @@ import 'package:dan_xi/feature/base_feature.dart';
 import 'package:dan_xi/page/subpage_dashboard.dart';
 import 'package:dan_xi/provider/settings_provider.dart';
 import 'package:flutter/cupertino.dart';
+import 'package:get/get.dart';
 
 /// Hold a list of notification shown in [HomeSubpage].
-class NotificationProvider with ChangeNotifier {
-  final List<Feature> _notifications = [];
+class NotificationProvider {
+  final RxList<Feature> _notifications = RxList<Feature>([]);
 
-  List<Feature> get notifications => _notifications;
+  RxList<Feature> get notifications => _notifications;
 
   void addNotification(Feature feature) {
     if (_notifications.any((element) =>
@@ -36,17 +37,13 @@ class NotificationProvider with ChangeNotifier {
         .contains(feature.runtimeType.toString())) return;
 
     _notifications.add(feature);
-    notifyListeners();
   }
 
   void removeNotification(Feature feature) {
-    bool removed = false;
     _notifications.removeWhere((element) {
       final equality =
           feature.runtimeType.toString() == element.runtimeType.toString();
-      if (equality) removed = true;
       return equality;
     });
-    if (removed) notifyListeners();
   }
 }

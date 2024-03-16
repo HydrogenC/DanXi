@@ -34,11 +34,10 @@ import 'package:flutter_platform_widgets/flutter_platform_widgets.dart';
 import 'package:platform_device_id/platform_device_id.dart';
 import 'package:provider/provider.dart';
 import 'package:uuid/uuid.dart';
+import 'package:get/get.dart';
 
 class DiagnosticConsole extends StatefulWidget {
-  final Map<String, dynamic>? arguments;
-
-  const DiagnosticConsole({super.key, this.arguments});
+  const DiagnosticConsole({super.key});
 
   @override
   DiagnosticConsoleState createState() => DiagnosticConsoleState();
@@ -48,6 +47,7 @@ class DiagnosticConsoleState extends State<DiagnosticConsole> {
   final StringBufferNotifier _console = StringBufferNotifier();
 
   late List<DiagnosticMethod> diagnoses;
+  late Map<String, dynamic>? arguments;
 
   @override
   void initState() {
@@ -59,6 +59,7 @@ class DiagnosticConsoleState extends State<DiagnosticConsole> {
       diagnoseUrl
     ];
     unawaited(diagnose());
+    arguments = Get.arguments;
   }
 
   Future<void> diagnose() async {

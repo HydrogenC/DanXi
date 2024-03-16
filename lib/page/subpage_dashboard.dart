@@ -39,6 +39,7 @@ import 'package:dan_xi/widget/libraries/with_scrollbar.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:get/get.dart';
 import 'package:provider/provider.dart';
 
 class HomeSubpage extends PlatformSubpage<HomeSubpage> {
@@ -87,7 +88,7 @@ class HomeSubpageState extends PlatformSubpageState<HomeSubpage> {
   @override
   void initState() {
     super.initState();
-    _notificationProvider = context.read<NotificationProvider>();
+    _notificationProvider = Get.find<NotificationProvider>();
     _refreshSubscription.bindOnlyInvalid(
         Constant.eventBus.on<RefreshHomepageEvent>().listen((event) {
           if (event.onlyRefreshOrder) {
@@ -135,9 +136,9 @@ class HomeSubpageState extends PlatformSubpageState<HomeSubpage> {
 
   List<Widget> _buildCards(List<DashboardCard> widgetSequence) {
     List<Widget> widgets = [];
-    NotificationProvider provider = context.watch<NotificationProvider>();
+    NotificationProvider provider = Get.find<NotificationProvider>();
     widgets.addAll(provider.notifications.map((e) => FeatureCardItem(
-      feature: e,
+          feature: e,
           onDismissed: () async {
             final name = e.runtimeType.toString();
             provider.removeNotification(e);
@@ -214,9 +215,9 @@ class HomeSubpageState extends PlatformSubpageState<HomeSubpage> {
               LimitedQueuedInterceptor.getInstance().dropAllRequest();
               triggerRebuildFeatures();
             },
-            child: ListView(
-              physics: const AlwaysScrollableScrollPhysics(),
-              children: _buildCards(widgetList),
-            )));
+            child: Obx(() => ListView(
+                  physics: const AlwaysScrollableScrollPhysics(),
+                  children: _buildCards(widgetList),
+                ))));
   }
 }

@@ -82,13 +82,8 @@ class PlatformX {
     primarySwatch ??= Colors.blue;
     watchChanges ??= true;
 
-    var isDarkMode = watchChanges
-        ? context
-                .select<SettingsProvider, ThemeType>(
-                    (settings) => settings.themeType)
-                .getBrightness() ==
-            Brightness.dark
-        : PlatformX.isDarkMode;
+    // TODO: REIMPLEMENT UPDATE LOGIC
+    var isDarkMode = PlatformX.isDarkMode;
     return isDarkMode
         ? Constant.darkTheme(PlatformX.isCupertino(context), primarySwatch)
         : Constant.lightTheme(PlatformX.isCupertino(context), primarySwatch);
