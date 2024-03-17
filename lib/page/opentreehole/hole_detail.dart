@@ -52,6 +52,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_platform_widgets/flutter_platform_widgets.dart';
 import 'package:flutter_progress_dialog/flutter_progress_dialog.dart';
+import 'package:get/get.dart';
 import 'package:intl/intl.dart';
 import 'package:linkify/linkify.dart';
 import 'package:nil/nil.dart';
@@ -102,9 +103,11 @@ String preprocessContentForDisplay(String content) {
 ///
 /// * See [hasPrefetchedAllData] below.
 class BBSPostDetail extends StatefulWidget {
-  final Map<String, dynamic>? arguments;
+  late final Map<String, dynamic>? arguments;
 
-  const BBSPostDetail({super.key, this.arguments});
+  BBSPostDetail({super.key, this.arguments}){
+    arguments = Get.arguments;
+  }
 
   @override
   BBSPostDetailState createState() => BBSPostDetailState();
@@ -279,7 +282,7 @@ class BBSPostDetailState extends State<BBSPostDetail> {
         }
       }
     });
-    _backgroundImage = SettingsProvider.getInstance().backgroundImage;
+    _backgroundImage = SettingsController.getInstance().backgroundImage;
     Future<List<OTFloor>>? allDataReceiver;
     if (hasPrefetchedAllData) {
       allDataReceiver = Future.value(prefetchedFloors);
@@ -407,11 +410,11 @@ class BBSPostDetailState extends State<BBSPostDetail> {
                           context, S.of(context).hide_hole_confirm,
                           isConfirmDestructive: true);
                       if (result == true) {
-                        var list = SettingsProvider.getInstance().hiddenHoles;
+                        var list = SettingsController.getInstance().hiddenHoles;
                         if (hole.hole_id != null &&
                             !list.contains(hole.hole_id!)) {
                           list.add(hole.hole_id!);
-                          SettingsProvider.getInstance().hiddenHoles = list;
+                          SettingsController.getInstance().hiddenHoles = list;
                         }
                         if (mounted) {
                           Noticing.showNotice(
@@ -726,7 +729,7 @@ class BBSPostDetailState extends State<BBSPostDetail> {
                 isConfirmDestructive: true);
             if (confirmed != true || !mounted) return;
 
-            FDUHoleProvider provider = context.read<FDUHoleProvider>();
+            FDUHoleController provider = context.read<FDUHoleController>();
             List<int> pinned = provider.currentDivision!.pinned!
                 .map((hole) => hole.hole_id!)
                 .toList();
@@ -800,7 +803,7 @@ class BBSPostDetailState extends State<BBSPostDetail> {
                       ],
                     ),
                     onPointerUp: (PointerUpEvent details) async {
-                      if (context.read<FDUHoleProvider>().isUserInitialized &&
+                      if (context.read<FDUHoleController>().isUserInitialized &&
                           OpenTreeHoleRepository.getInstance()
                               .getDivisions()
                               .isNotEmpty) {
@@ -1295,7 +1298,7 @@ StatelessWidget smartRender(
     bool translucentCard,
     {bool preview = false}) {
   return PostRenderWidget(
-    render: SettingsProvider.getInstance().isMarkdownRenderingEnabled
+    render: SettingsController.getInstance().isMarkdownRenderingEnabled
         ? kMarkdownRender
         : kPlainRender,
     content: preprocessContentForDisplay(content),

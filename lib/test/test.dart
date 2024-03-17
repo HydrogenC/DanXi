@@ -23,9 +23,9 @@ import 'package:flutter/foundation.dart';
 
 /// This is an app-specific test class.
 /// You can write your feature-testing codes here, without worrying about whether
-/// [StateProvider] and [SettingsProvider] have been initialized.
+/// [StateProvider] and [SettingsController] have been initialized.
 class _TestLifeCycle {
-  /// When app completes initialization of [StateProvider] and [SettingsProvider],
+  /// When app completes initialization of [StateProvider] and [SettingsController],
   /// the [context] is from [HomePage].
   static void onStart(BuildContext context) {
     /// TEST CODE

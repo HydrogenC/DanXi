@@ -36,17 +36,20 @@ import 'package:dan_xi/widget/opentreehole/tag_selector/tag.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_platform_widgets/flutter_platform_widgets.dart';
+import 'package:get/get.dart';
 import 'package:intl/intl.dart';
 
 /// A list page showing usages of classrooms.
 class EmptyClassroomDetailPage extends StatefulWidget {
-  final Map<String, dynamic>? arguments;
+  late final Map<String, dynamic>? arguments;
 
   @override
   EmptyClassroomDetailPageState createState() =>
       EmptyClassroomDetailPageState();
 
-  const EmptyClassroomDetailPage({super.key, this.arguments});
+  EmptyClassroomDetailPage({super.key}){
+    arguments = Get.arguments;
+  }
 }
 
 class EmptyClassroomDetailPageState extends State<EmptyClassroomDetailPage> {
@@ -63,18 +66,18 @@ class EmptyClassroomDetailPageState extends State<EmptyClassroomDetailPage> {
 
   set _selectBuildingIndex(int value) {
     __selectBuildingIndex = value;
-    if (SettingsProvider.getInstance().lastECBuildingChoiceRepresentation !=
+    if (SettingsController.getInstance().lastECBuildingChoiceRepresentation !=
         value) {
-      SettingsProvider.getInstance().lastECBuildingChoiceRepresentation = value;
+      SettingsController.getInstance().lastECBuildingChoiceRepresentation = value;
     }
   }
 
   double _selectDate = 0;
 
   _loadDefaultRoom() {
-    _selectCampusIndex = SettingsProvider.getInstance().campus.index;
+    _selectCampusIndex = SettingsController.getInstance().campus.index;
     _selectBuildingIndex =
-        SettingsProvider.getInstance().lastECBuildingChoiceRepresentation;
+        SettingsController.getInstance().lastECBuildingChoiceRepresentation;
   }
 
   @override
@@ -449,7 +452,7 @@ class EmptyClassroomDetailPageState extends State<EmptyClassroomDetailPage> {
 
     // Prevent repeated read from disk
     final accessibilityColoring =
-        SettingsProvider.getInstance().useAccessibilityColoring;
+        SettingsController.getInstance().useAccessibilityColoring;
 
     for (var element in roomInfo.busy!) {
       if (accessibilityColoring) {

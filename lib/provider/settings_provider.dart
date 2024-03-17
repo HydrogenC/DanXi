@@ -32,15 +32,16 @@ import 'package:dan_xi/page/opentreehole/hole_editor.dart';
 import 'package:dan_xi/util/io/user_agent_interceptor.dart';
 import 'package:dan_xi/util/shared_preferences.dart';
 import 'package:flutter/material.dart';
+import 'package:get/get.dart';
 
 /// A class to manage [SharedPreferences] Settings
 ///
 /// Code Integrity Note:
-/// Avoid returning [null] in [SettingsProvider]. Return the default value instead.
+/// Avoid returning [null] in [SettingsController]. Return the default value instead.
 /// Only return [null] when there is no default value.
-class SettingsProvider with ChangeNotifier {
+class SettingsController extends GetxController {
   XSharedPreferences? preferences;
-  static final _instance = SettingsProvider._();
+  static final _instance = SettingsController._();
   static const String KEY_PREFERRED_CAMPUS = "campus";
 
   //static const String KEY_AUTOTICK_LAST_CANCEL_DATE =
@@ -84,14 +85,15 @@ class SettingsProvider with ChangeNotifier {
   static const String KEY_IMAGE_BASE_URL = "image_base_url";
   static const String KEY_DANKE_BASE_URL = "danke_base_url";
 
-  SettingsProvider._();
+  SettingsController._();
 
-  /// Get a global instance of [SettingsProvider].
+  static SettingsController get to => Get.find();
+
+  /// Get a global instance of [SettingsController].
   ///
-  /// Never use it anywhere expect [main.dart], where we put it into a [ChangeNotifierProvider] on the top
-  /// of widget tree.
-  /// If you need to get access to a [SettingsProvider], call [context.read<SettingsProvider>()] instead.
-  factory SettingsProvider.getInstance() => _instance;
+  /// Never use it anywhere expect [main.dart], 
+  /// If you need to get access to a [SettingsController], call [SettingsContoller.to] instead.
+  factory SettingsController.getInstance() => _instance;
 
   List<String> get searchHistory {
     if (preferences!.containsKey(KEY_SEARCH_HISTORY)) {
@@ -107,7 +109,7 @@ class SettingsProvider with ChangeNotifier {
     } else if (preferences!.containsKey(KEY_SEARCH_HISTORY)) {
       preferences!.remove(KEY_SEARCH_HISTORY);
     }
-    notifyListeners();
+    update();
   }
 
   String? get timetableSemester {
@@ -119,7 +121,7 @@ class SettingsProvider with ChangeNotifier {
 
   set timetableSemester(String? value) {
     preferences!.setString(KEY_TIMETABLE_SEMESTER, value!);
-    notifyListeners();
+    update();
   }
 
   FileImage? get backgroundImage {
@@ -150,7 +152,7 @@ class SettingsProvider with ChangeNotifier {
     } else {
       preferences!.setString(KEY_FDUHOLE_BASE_URL, Constant.FDUHOLE_BASE_URL);
     }
-    notifyListeners();
+    update();
   }
 
   String get authBaseUrl {
@@ -169,7 +171,7 @@ class SettingsProvider with ChangeNotifier {
     } else {
       preferences!.setString(KEY_AUTH_BASE_URL, Constant.AUTH_BASE_URL);
     }
-    notifyListeners();
+    update();
   }
 
   String get imageBaseUrl {
@@ -188,7 +190,7 @@ class SettingsProvider with ChangeNotifier {
     } else {
       preferences!.setString(KEY_IMAGE_BASE_URL, Constant.IMAGE_BASE_URL);
     }
-    notifyListeners();
+    update();
   }
 
   String get dankeBaseUrl {
@@ -207,7 +209,7 @@ class SettingsProvider with ChangeNotifier {
     } else {
       preferences!.setString(KEY_DANKE_BASE_URL, Constant.DANKE_BASE_URL);
     }
-    notifyListeners();
+    update();
   }
 
   String? get backgroundImagePath {
@@ -223,15 +225,11 @@ class SettingsProvider with ChangeNotifier {
     } else {
       preferences!.remove(KEY_BACKGROUND_IMAGE_PATH);
     }
-    notifyListeners();
+    update();
   }
 
   Future<void> init() async =>
       preferences = await XSharedPreferences.getInstance();
-
-  @Deprecated(
-      "SettingsProvider do not need a BuildContext any more. Use SettingsProvider.getInstance() instead")
-  factory SettingsProvider.of(_) => SettingsProvider.getInstance();
 
   bool get useAccessibilityColoring {
     if (preferences!.containsKey(KEY_ACCESSIBILITY_COLORING)) {
@@ -242,7 +240,7 @@ class SettingsProvider with ChangeNotifier {
 
   set useAccessibilityColoring(bool value) {
     preferences!.setBool(KEY_ACCESSIBILITY_COLORING, value);
-    notifyListeners();
+    update(['global']);
   }
 
   /// Whether user has opted-in to Ads
@@ -255,7 +253,7 @@ class SettingsProvider with ChangeNotifier {
 
   set isAdEnabled(bool value) {
     preferences!.setBool(KEY_AD_ENABLED, value);
-    notifyListeners();
+    update();
   }
 
   bool get hasVisitedTimeTable {
@@ -267,7 +265,7 @@ class SettingsProvider with ChangeNotifier {
 
   set hasVisitedTimeTable(bool value) {
     preferences!.setBool(KEY_VISITED_TIMETABLE, value);
-    notifyListeners();
+    update();
   }
 
   int get lastECBuildingChoiceRepresentation {
@@ -279,7 +277,7 @@ class SettingsProvider with ChangeNotifier {
 
   set lastECBuildingChoiceRepresentation(int value) {
     preferences!.setInt(KEY_EMPTY_CLASSROOM_LAST_BUILDING_CHOICE, value);
-    notifyListeners();
+    update();
   }
 
   String? get thisSemesterStartDate {
@@ -291,7 +289,7 @@ class SettingsProvider with ChangeNotifier {
 
   set thisSemesterStartDate(String? value) {
     preferences!.setString(KEY_THIS_SEMESTER_START_DATE, value!);
-    notifyListeners();
+    update();
   }
 
   TimeTableExtra? get semesterStartDates {
@@ -304,7 +302,7 @@ class SettingsProvider with ChangeNotifier {
 
   set semesterStartDates(TimeTableExtra? value) {
     preferences!.setString(KEY_SEMESTER_START_DATES, jsonEncode(value!));
-    notifyListeners();
+    update();
   }
 
   /// User's preferences of Dashboard Widgets
@@ -333,7 +331,7 @@ class SettingsProvider with ChangeNotifier {
 
   set dashboardWidgetsSequence(List<DashboardCard>? value) {
     preferences!.setString(KEY_DASHBOARD_WIDGETS, jsonEncode(value));
-    notifyListeners();
+    update();
   }
 
   List<Course> get manualAddedCourses {
@@ -355,7 +353,7 @@ class SettingsProvider with ChangeNotifier {
     } else if (preferences!.containsKey(KEY_MANUALLY_ADDED_COURSE)) {
       preferences!.remove(KEY_MANUALLY_ADDED_COURSE);
     }
-    notifyListeners();
+    update();
   }
 
   Campus get campus {
@@ -372,7 +370,7 @@ class SettingsProvider with ChangeNotifier {
 
   set campus(Campus campus) {
     preferences!.setString(KEY_PREFERRED_CAMPUS, campus.toString());
-    notifyListeners();
+    update();
   }
 
   Language get defaultLanguage {
@@ -401,7 +399,7 @@ class SettingsProvider with ChangeNotifier {
 
   set language(Language language) {
     preferences!.setString(KEY_PREFERRED_LANGUAGE, language.toString());
-    notifyListeners();
+    update(['global']);
   }
 
   /*Push Token
@@ -432,7 +430,7 @@ class SettingsProvider with ChangeNotifier {
     } else {
       preferences!.remove(KEY_FDUHOLE_TOKEN);
     }
-    notifyListeners();
+    update();
   }
 
   void deleteAllFduholeData() {
@@ -455,7 +453,7 @@ class SettingsProvider with ChangeNotifier {
 
   set debugMode(bool mode) {
     preferences!.setBool(KEY_DEBUG_MODE, mode);
-    notifyListeners();
+    update();
   }
 
   //FDUHOLE Default Sorting Order
@@ -473,7 +471,7 @@ class SettingsProvider with ChangeNotifier {
 
   set fduholeSortOrder(SortOrder? value) {
     preferences!.setString(KEY_FDUHOLE_SORTORDER, value.getInternalString()!);
-    notifyListeners();
+    update();
   }
 
   /// FDUHOLE Folded Post Behavior
@@ -492,7 +490,7 @@ class SettingsProvider with ChangeNotifier {
 
   set fduholeFoldBehavior(FoldBehavior value) {
     preferences!.setInt(KEY_FDUHOLE_FOLDBEHAVIOR, value.index);
-    notifyListeners();
+    update();
   }
 
   /// Clean Mode
@@ -506,7 +504,7 @@ class SettingsProvider with ChangeNotifier {
 
   set cleanMode(bool mode) {
     preferences!.setBool(KEY_CLEAN_MODE, mode);
-    notifyListeners();
+    update(['hole']);
   }
 
   /// Hidden tags
@@ -523,7 +521,7 @@ class SettingsProvider with ChangeNotifier {
   set hiddenTags(List<OTTag>? tags) {
     if (tags == null) return;
     preferences!.setString(KEY_HIDDEN_TAGS, jsonEncode(tags));
-    notifyListeners();
+    update();
   }
 
   /// Hide FDUHole
@@ -537,7 +535,7 @@ class SettingsProvider with ChangeNotifier {
 
   set hideHole(bool mode) {
     preferences!.setBool(KEY_HIDDEN_TREEHOLE, mode);
-    notifyListeners();
+    update();
   }
 
   /// Celebration words
@@ -550,7 +548,7 @@ class SettingsProvider with ChangeNotifier {
 
   set celebrationWords(List<Celebration> lists) {
     preferences!.setString(KEY_CELEBRATION, jsonEncode(lists));
-    notifyListeners();
+    update();
   }
 
   /// Custom User Agent
@@ -571,7 +569,7 @@ class SettingsProvider with ChangeNotifier {
     } else {
       preferences!.remove(KEY_CUSTOM_USER_AGENT);
     }
-    notifyListeners();
+    update();
   }
 
   /// Whether user has opted-in to banners
@@ -584,7 +582,7 @@ class SettingsProvider with ChangeNotifier {
 
   set isBannerEnabled(bool value) {
     preferences!.setBool(KEY_BANNER_ENABLED, value);
-    notifyListeners();
+    update(['hole']);
   }
 
   bool get isTagSuggestionEnabled {
@@ -596,7 +594,7 @@ class SettingsProvider with ChangeNotifier {
 
   set isTagSuggestionEnabled(bool value) {
     preferences!.setBool(KEY_TAG_SUGGESTIONS_ENABLE, value);
-    notifyListeners();
+    update(['hole']);
   }
 
   bool tagSuggestionAvailable = false;
@@ -606,7 +604,7 @@ class SettingsProvider with ChangeNotifier {
   }
 
   /// Primary color used by the app.
-  int get primarySwatch_V2 {
+  int get primarySwatchV2 {
     if (preferences!.containsKey(KEY_PRIMARY_SWATCH_V2)) {
       int? color = preferences!.getInt(KEY_PRIMARY_SWATCH_V2);
       return Color(color!).value;
@@ -615,9 +613,9 @@ class SettingsProvider with ChangeNotifier {
   }
 
   /// Set primary swatch by color name defined in [Constant.TAG_COLOR_LIST].
-  void setPrimarySwatch_V2(int value) {
+  set primarySwatchV2(int value) {
     preferences!.setInt(KEY_PRIMARY_SWATCH_V2, Color(value).value);
-    notifyListeners();
+    update(['global']);
   }
 
   int get lightWatermarkColor {
@@ -630,7 +628,7 @@ class SettingsProvider with ChangeNotifier {
 
   set lightWatermarkColor(int value) {
     preferences!.setInt(KEY_LIGHT_WATERMARK_COLOR, Color(value).value);
-    notifyListeners();
+    update();
   }
 
   int get darkWatermarkColor {
@@ -643,7 +641,7 @@ class SettingsProvider with ChangeNotifier {
 
   set darkWatermarkColor(int value) {
     preferences!.setInt(KEY_DARK_WATERMARK_COLOR, Color(value).value);
-    notifyListeners();
+    update();
   }
 
   bool get visibleWatermarkMode {
@@ -656,7 +654,7 @@ class SettingsProvider with ChangeNotifier {
 
   set visibleWatermarkMode(bool mode) {
     preferences!.setBool(KEY_VISIBLE_WATERMARK_MODE, mode);
-    notifyListeners();
+    update();
   }
 
   List<int> get hiddenHoles {
@@ -671,7 +669,7 @@ class SettingsProvider with ChangeNotifier {
 
   set hiddenHoles(List<int> list) {
     preferences!.setString(KEY_HIDDEN_HOLES, jsonEncode(list));
-    notifyListeners();
+    update();
   }
 
   List<String> get hiddenNotifications {
@@ -686,7 +684,7 @@ class SettingsProvider with ChangeNotifier {
 
   set hiddenNotifications(List<String> list) {
     preferences!.setString(KEY_HIDDEN_NOTIFICATIONS, jsonEncode(list));
-    notifyListeners();
+    update();
   }
 
   ThemeType get themeType {
@@ -701,7 +699,7 @@ class SettingsProvider with ChangeNotifier {
 
   set themeType(ThemeType type) {
     preferences!.setString(KEY_THEME_TYPE, type.internalString());
-    notifyListeners();
+    update(['global']);
   }
 
   bool get isMarkdownRenderingEnabled {
@@ -713,7 +711,7 @@ class SettingsProvider with ChangeNotifier {
 
   set isMarkdownRenderingEnabled(bool value) {
     preferences!.setBool(KEY_MARKDOWN_ENABLED, value);
-    notifyListeners();
+    update();
   }
 }
 

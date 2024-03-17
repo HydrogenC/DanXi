@@ -31,17 +31,18 @@ import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_platform_widgets/flutter_platform_widgets.dart';
+import 'package:get/get.dart';
 import 'package:provider/provider.dart';
 
 /// OpenTreeHole login wizard page.
 ///
 class HoleLoginPage extends StatefulWidget {
-  final Map<String, dynamic>? arguments;
+  final Map<String, dynamic>? arguments = Get.arguments;
 
   @override
   HoleLoginPageState createState() => HoleLoginPageState();
 
-  const HoleLoginPage({super.key, this.arguments});
+  HoleLoginPage({super.key});
 }
 
 class HoleLoginPageState extends State<HoleLoginPage> {

@@ -42,7 +42,7 @@ class BBSHiddenTagsPreferencePageState
   @override
   void initState() {
     super.initState();
-    tags = SettingsProvider.getInstance().hiddenTags ?? [];
+    tags = SettingsController.getInstance().hiddenTags ?? [];
   }
 
   @override
@@ -56,7 +56,7 @@ class BBSHiddenTagsPreferencePageState
       body: SafeArea(
         child: OTTagSelector(
           initialTags: tags,
-          onChanged: () => SettingsProvider.getInstance().hiddenTags = tags,
+          onChanged: () => SettingsController.getInstance().hiddenTags = tags,
         ),
       ),
     );

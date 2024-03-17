@@ -89,7 +89,7 @@ class BusFeature extends Feature {
   Widget? get customSubtitle {
     if (_status == ConnectionStatus.DONE && _busList != null) {
       return buildSubtitle(
-          nextBusForCampus(SettingsProvider.getInstance().campus));
+          nextBusForCampus(SettingsController.getInstance().campus));
     }
     return null;
   }

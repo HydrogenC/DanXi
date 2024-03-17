@@ -75,7 +75,7 @@ class TimeTable {
   ///
   /// If you need to listen to the change of [defaultStartTime], see codes in
   static DateTime get defaultStartTime {
-    var startDateStr = SettingsProvider.getInstance().thisSemesterStartDate;
+    var startDateStr = SettingsController.getInstance().thisSemesterStartDate;
     DateTime? startDate;
     if (startDateStr != null) startDate = DateTime.tryParse(startDateStr);
     return startDate ?? Constant.DEFAULT_SEMESTER_START_DATE;

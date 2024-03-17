@@ -149,7 +149,7 @@ class TimetableSubPageState extends PlatformSubpageState<TimetableSubPage> {
   }
 
   List<Course> getCourseList() {
-    return SettingsProvider.getInstance().manualAddedCourses;
+    return SettingsController.getInstance().manualAddedCourses;
   }
 
   void _setContent() {
@@ -256,10 +256,10 @@ class TimetableSubPageState extends PlatformSubpageState<TimetableSubPage> {
 
   @override
   void initState() {
-    if (!SettingsProvider.getInstance().hasVisitedTimeTable) {
+    if (!SettingsController.getInstance().hasVisitedTimeTable) {
       WidgetsBinding.instance
           .addPostFrameCallback((_) => createTutorial().show(context: context));
-      SettingsProvider.getInstance().hasVisitedTimeTable = true;
+      SettingsController.getInstance().hasVisitedTimeTable = true;
     }
     super.initState();
     _setContent();
@@ -291,7 +291,7 @@ class TimetableSubPageState extends PlatformSubpageState<TimetableSubPage> {
               return courseList;
             }
             List<Course> newCourseList = courseList + [course];
-            SettingsProvider.getInstance().manualAddedCourses = newCourseList;
+            SettingsController.getInstance().manualAddedCourses = newCourseList;
             return newCourseList;
           }));
           refresh();
@@ -462,7 +462,7 @@ class TimetableSubPageState extends PlatformSubpageState<TimetableSubPage> {
                   onPressed: () {
                     newCourses.removeWhere(
                         (e) => e.courseId == event.course.courseId);
-                    SettingsProvider.getInstance().manualAddedCourses =
+                    SettingsController.getInstance().manualAddedCourses =
                         newCourses;
                     Navigator.of(context).pop();
                     refresh();
@@ -576,7 +576,7 @@ class SemesterSelectionButtonState extends State<SemesterSelectionButton> {
         .loadSemesters(StateProvider.personInfo.value);
     // Reverse the order to make the newest item at top
     _semesterInfo = _semesterInfo?.reversed.toList();
-    String? chosenSemester = SettingsProvider.getInstance().timetableSemester;
+    String? chosenSemester = SettingsController.getInstance().timetableSemester;
     if (chosenSemester == null || chosenSemester.isEmpty) {
       chosenSemester = await TimeTableRepository.getInstance()
           .getDefaultSemesterId(StateProvider.personInfo.value);
@@ -605,19 +605,19 @@ class SemesterSelectionButtonState extends State<SemesterSelectionButton> {
                     .map((e) => PlatformContextMenuItem(
                         menuContext: menuContext,
                         onPressed: () {
-                          SettingsProvider.getInstance().timetableSemester =
+                          SettingsController.getInstance().timetableSemester =
                               e.semesterId;
                           setState(() => _selectionInfo = e);
 
                           // Try to parse the start date
                           String? parsedStartDate =
-                              SettingsProvider.getInstance()
+                              SettingsController.getInstance()
                                   .semesterStartDates
                                   ?.parseStartDate(
                                       StateProvider.personInfo.value!.group,
                                       e.semesterId!);
                           if (parsedStartDate != null) {
-                            SettingsProvider.getInstance()
+                            SettingsController.getInstance()
                                 .thisSemesterStartDate = parsedStartDate;
                           } else {
                             Noticing.showNotice(
@@ -660,7 +660,7 @@ class StartDateSelectionButton extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    DateTime startTime = context.select<SettingsProvider, DateTime>((value) {
+    DateTime startTime = context.select<SettingsController, DateTime>((value) {
       var startDateStr = value.thisSemesterStartDate;
       DateTime? startDate;
       if (startDateStr != null) startDate = DateTime.tryParse(startDateStr);
@@ -689,7 +689,7 @@ class StartDateSelectionButton extends StatelessWidget {
               return;
             }
           }
-          SettingsProvider.getInstance().thisSemesterStartDate =
+          SettingsController.getInstance().thisSemesterStartDate =
               newDate.toIso8601String();
           onUpdate?.call();
         }

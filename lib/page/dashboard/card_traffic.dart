@@ -30,15 +30,18 @@ import 'package:dan_xi/widget/libraries/with_scrollbar.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_platform_widgets/flutter_platform_widgets.dart';
+import 'package:get/get.dart';
 
 /// A list page showing how crowded each of the campus dining halls is.
 class CardCrowdData extends StatefulWidget {
-  final Map<String, dynamic>? arguments;
+  late final Map<String, dynamic>? arguments;
 
   @override
   CardCrowdDataState createState() => CardCrowdDataState();
 
-  const CardCrowdData({super.key, this.arguments});
+  CardCrowdData({super.key, this.arguments}){
+    arguments = Get.arguments;
+  }
 }
 
 class CardCrowdDataState extends State<CardCrowdData> {
@@ -51,7 +54,7 @@ class CardCrowdDataState extends State<CardCrowdData> {
   void initState() {
     super.initState();
     _personInfo = StateProvider.personInfo.value;
-    _selectItem = SettingsProvider.getInstance().campus;
+    _selectItem = SettingsController.getInstance().campus;
     _sliding = _selectItem!.index;
     WidgetsBinding.instance.addPostFrameCallback((timeStamp) {
       _onSelectedItemChanged(_selectItem);

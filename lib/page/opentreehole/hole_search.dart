@@ -72,13 +72,13 @@ class _OTSearchPageState extends State<OTSearchPage> {
                     alignment: Alignment.centerLeft,
                     child: Text(S.of(context).clear),
                     onPressed: () =>
-                        SettingsProvider.getInstance().searchHistory = null),
+                        SettingsController.getInstance().searchHistory = null),
               ],
             ),
           ),
           Flexible(
             fit: FlexFit.loose,
-            child: Selector<SettingsProvider, List<String>>(
+            child: Selector<SettingsController, List<String>>(
                 selector: (_, model) => model.searchHistory,
                 builder: (_, value, __) => ListView(
                       primary: false,
@@ -294,10 +294,10 @@ void submit(BuildContext context, String value) {
   value = value.trim();
   if (value.isEmpty) return;
 
-  final history = context.read<SettingsProvider>().searchHistory;
+  final history = context.read<SettingsController>().searchHistory;
   // Populate history
   if (!history.contains(value)) {
-    context.read<SettingsProvider>().searchHistory = [value] + history;
+    context.read<SettingsController>().searchHistory = [value] + history;
   }
 }
 

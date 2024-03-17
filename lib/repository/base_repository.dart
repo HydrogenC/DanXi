@@ -41,7 +41,7 @@ abstract class BaseRepositoryWithDio {
           sendTimeout: 10000);
       _dios[linkHost]!.interceptors.add(LimitedQueuedInterceptor.getInstance());
       _dios[linkHost]!.interceptors.add(UserAgentInterceptor(
-          userAgent: SettingsProvider.getInstance().customUserAgent));
+          userAgent: SettingsController.getInstance().customUserAgent));
       _dios[linkHost]!.interceptors.add(CookieManager(cookieJar!));
       DioLogInterceptor.enablePrintLog = false;
       _dios[linkHost]!.interceptors.add(DioLogInterceptor());

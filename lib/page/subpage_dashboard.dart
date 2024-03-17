@@ -147,7 +147,7 @@ class HomeSubpageState extends PlatformSubpageState<HomeSubpage> {
                 context, S.of(context).hide_notification_description,
                 isConfirmDestructive: true);
             if (hide == true && mounted) {
-              final provider = context.read<SettingsProvider>();
+              final provider = context.read<SettingsController>();
               final oldList = provider.hiddenNotifications;
               oldList.add(name);
               provider.hiddenNotifications = oldList;
@@ -203,7 +203,7 @@ class HomeSubpageState extends PlatformSubpageState<HomeSubpage> {
   @override
   Widget buildPage(BuildContext context) {
     List<DashboardCard> widgetList =
-        SettingsProvider.getInstance().dashboardWidgetsSequence;
+        SettingsController.getInstance().dashboardWidgetsSequence;
     return WithScrollbar(
         controller: PrimaryScrollController.of(context),
         child: RefreshIndicator(

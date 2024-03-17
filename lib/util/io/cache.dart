@@ -31,7 +31,7 @@ class Cache {
       T Function(String? cachedValue) decode, String Function(T object) encode,
       {bool Function(String cachedValue)? validate}) async {
     XSharedPreferences preferences =
-        SettingsProvider.getInstance().preferences!;
+        SettingsController.getInstance().preferences!;
     validate ??= (v) => true;
     if (!preferences.containsKey(key)) {
       // Reload the cache
@@ -58,7 +58,7 @@ class Cache {
       T Function(String? cachedValue) decode, String Function(T object) encode,
       {bool Function(T value)? validate}) async {
     XSharedPreferences preferences =
-        SettingsProvider.getInstance().preferences!;
+        SettingsController.getInstance().preferences!;
     validate ??= (v) => v != null;
     T newValue = await fetch();
     if (validate(newValue)) {
@@ -75,7 +75,7 @@ class Cache {
       T Function(String? cachedValue) decode, String Function(T object) encode,
       {bool Function(String cachedValue)? validate}) async {
     XSharedPreferences preferences =
-        SettingsProvider.getInstance().preferences!;
+        SettingsController.getInstance().preferences!;
     validate ??= (v) => true;
     if (!preferences.containsKey(key)) {
       // Reload the cache

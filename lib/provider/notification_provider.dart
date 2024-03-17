@@ -18,7 +18,6 @@
 import 'package:dan_xi/feature/base_feature.dart';
 import 'package:dan_xi/page/subpage_dashboard.dart';
 import 'package:dan_xi/provider/settings_provider.dart';
-import 'package:flutter/cupertino.dart';
 import 'package:get/get.dart';
 
 /// Hold a list of notification shown in [HomeSubpage].
@@ -32,7 +31,7 @@ class NotificationProvider {
         element.runtimeType.toString() == feature.runtimeType.toString())) {
       return;
     }
-    if (SettingsProvider.getInstance()
+    if (SettingsController.getInstance()
         .hiddenNotifications
         .contains(feature.runtimeType.toString())) return;
 

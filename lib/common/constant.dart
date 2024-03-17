@@ -234,7 +234,7 @@ class Constant {
 
   /// A default dashboard card list to be shown on the initial startup.
   ///
-  /// It will be overwritten by data stored with key [SettingsProvider.KEY_DASHBOARD_WIDGETS].
+  /// It will be overwritten by data stored with key [SettingsController.KEY_DASHBOARD_WIDGETS].
   static List<DashboardCard> defaultDashboardCardList = List.unmodifiable([
     DashboardCard(FEATURE_NEW_CARD, null, null, true),
     DashboardCard("welcome_feature", null, null, true),

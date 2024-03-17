@@ -102,7 +102,7 @@ class UISLoginTool {
     IndependentCookieJar workJar = IndependentCookieJar.createFrom(jar);
     workDio.interceptors.add(LimitedQueuedInterceptor.getInstance());
     workDio.interceptors.add(UserAgentInterceptor(
-        userAgent: SettingsProvider.getInstance().customUserAgent));
+        userAgent: SettingsController.getInstance().customUserAgent));
     workDio.interceptors.add(CookieManager(workJar));
     workDio.interceptors.add(DioLogInterceptor());
 

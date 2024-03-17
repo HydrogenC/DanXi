@@ -29,7 +29,7 @@ class UserAgentInterceptor extends Interceptor {
 
   static String? get defaultUsedUserAgent =>
       StateProvider.onlineUserAgent ??
-      SettingsProvider.getInstance().customUserAgent ??
+      SettingsController.getInstance().customUserAgent ??
       Constant.DEFAULT_USER_AGENT;
 
   @override

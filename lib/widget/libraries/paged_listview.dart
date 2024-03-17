@@ -255,7 +255,7 @@ class PagedListViewState<T> extends State<PagedListView<T>>
       error = "Unknown Error";
     } else {
       if (snapshot.error is LoginExpiredError) {
-        SettingsProvider.getInstance().deleteAllFduholeData();
+        SettingsController.getInstance().deleteAllFduholeData();
       }
       if (snapshot.error is NotLoginError) {
         error = (snapshot.error as NotLoginError).errorMessage;

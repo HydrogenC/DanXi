@@ -164,7 +164,7 @@ class CourseReviewEditor {
       progressDialog.dismiss(showAnim: false);
     }
     context
-        .read<FDUHoleProvider>()
+        .read<FDUHoleController>()
         .courseReviewEditorCache
         .remove(courseGroup.code);
     return true;
@@ -198,7 +198,7 @@ class CourseReviewEditor {
       progressDialog.dismiss(showAnim: false);
     }
     context
-        .read<FDUHoleProvider>()
+        .read<FDUHoleController>()
         .courseReviewEditorCache
         .remove(courseGroup.code);
     return true;
@@ -713,20 +713,20 @@ class CourseReviewEditorPageState extends State<CourseReviewEditorPage> {
     } else {
       review.addListener(() {
         context
-            .read<FDUHoleProvider>()
+            .read<FDUHoleController>()
             .courseReviewEditorCache[_courseGroup.code]!
             .copyValuesFrom(review);
       });
       if (context
-          .read<FDUHoleProvider>()
+          .read<FDUHoleController>()
           .courseReviewEditorCache
           .containsKey(_courseGroup.code)) {
         review.copyValuesFrom(context
-            .read<FDUHoleProvider>()
+            .read<FDUHoleController>()
             .courseReviewEditorCache[_courseGroup.code]!);
       } else {
         context
-                .read<FDUHoleProvider>()
+                .read<FDUHoleController>()
                 .courseReviewEditorCache[_courseGroup.code] =
             CourseReviewEditorText.newInstance();
       }

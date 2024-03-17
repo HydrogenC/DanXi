@@ -19,9 +19,7 @@ import 'dart:async';
 import 'dart:ui';
 
 import 'package:bitsdojo_window/bitsdojo_window.dart';
-import 'package:dan_xi/feature/base_feature.dart';
 import 'package:dan_xi/feature/feature_map.dart';
-import 'package:dan_xi/feature/welcome_feature.dart';
 import 'package:dan_xi/generated/l10n.dart';
 import 'package:dan_xi/page/danke/course_group_detail.dart';
 import 'package:dan_xi/page/danke/course_review_editor.dart';
@@ -68,7 +66,6 @@ import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:flutter_phoenix/flutter_phoenix.dart';
 import 'package:flutter_platform_widgets/flutter_platform_widgets.dart';
 import 'package:material_color_generator/material_color_generator.dart';
-import 'package:provider/provider.dart';
 import 'package:xiao_mi_push_plugin/xiao_mi_push_plugin.dart';
 import 'package:get/get.dart';
 
@@ -103,9 +100,9 @@ void main() {
   // We need to adjust the screen brightness when showing tht Fudan QR Code.
   unawaited(LazyFuture.pack(ScreenProxy.init()));
 
-  SettingsProvider.getInstance().init().then((_) {
-    SettingsProvider.getInstance().isTagSuggestionAvailable().then((value) {
-      SettingsProvider.getInstance().tagSuggestionAvailable = value;
+  SettingsController.getInstance().init().then((_) {
+    SettingsController.getInstance().isTagSuggestionAvailable().then((value) {
+      SettingsController.getInstance().tagSuggestionAvailable = value;
       final registerDeviceIdentity =
           PlatformX.isAndroid ? DeviceIdentity.register() : Future.value();
       registerDeviceIdentity.then((_) {
@@ -157,8 +154,8 @@ class DanxiApp extends StatelessWidget {
         name: '/placeholder',
         page: () => const ColoredBox(color: Colors.blueAccent)),
     GetPage(name: '/home', page: () => const HomePage()),
-    GetPage(name: '/diagnose', page: () => const DiagnosticConsole()),
-    GetPage(name: '/bbs/reports', page: () => const BBSReportDetail()),
+    GetPage(name: '/diagnose', page: () => DiagnosticConsole()),
+    GetPage(name: '/bbs/reports', page: () => BBSReportDetail()),
     GetPage(name: '/card/detail', page: () => CardDetailPage()),
     GetPage(name: '/card/crowdData', page: () => CardCrowdData()),
     GetPage(name: '/room/detail', page: () => EmptyClassroomDetailPage()),
@@ -196,7 +193,7 @@ class DanxiApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     // We use [GlobalKey] to get the navigator state of the root navigator.
-    final GlobalKey<NavigatorState> navigatorKey = GlobalKey<NavigatorState>();
+    final GlobalKey<NavigatorState> navigatorKey = Get.key;
 
     // Replace the global error widget with a simple Text.
     if (!kDebugMode) ErrorWidget.builder = errorBuilder;
@@ -208,76 +205,71 @@ class DanxiApp extends StatelessWidget {
     // You may find [PlatformX] in `lib/util/platform_universal.dart` useful to
     // get the current platform.
     Widget mainApp = PlatformProvider(
-      // Uncomment this line below to force the app to use Cupertino Widgets.
-      // initialPlatform: TargetPlatform.iOS,
+        // Uncomment this line below to force the app to use Cupertino Widgets.
+        // initialPlatform: TargetPlatform.iOS,
+        builder: (BuildContext context) => GetBuilder<SettingsController>(
+            id: 'global',
+            builder: (controller) {
+              MaterialColor primarySwatch = generateMaterialColor(
+                  color: Color(controller.primarySwatchV2));
 
-      // [DynamicThemeController] enables the app to change between dark/light
-      // theme without restart on iOS.
-      builder: (BuildContext context) {
-        // TODO: REIMPLEMENT UPDATE LOGIC
-        MaterialColor primarySwatch = generateMaterialColor(
-            color: Color(SettingsProvider.getInstance().primarySwatch_V2));
+              // Since we cannot use PlatformApp and GetApp together, we have to
+              // manually setup the routing system of GetX
+              Get.addPages(routes);
+              Get.smartManagement = SmartManagement.full;
 
-        // Since we cannot use PlatformApp and GetApp together, we have to
-        // manually setup the routing system of GetX
-        Get.addPages(routes);
-        Get.smartManagement = SmartManagement.full;
-
-        return DynamicThemeController(
-          lightTheme: Constant.lightTheme(
-              PlatformX.isCupertino(context), primarySwatch),
-          darkTheme:
-              Constant.darkTheme(PlatformX.isCupertino(context), primarySwatch),
-          child: Material(
-            child: PlatformApp(
-              // Remember? We have just defined this scroll behavior class above
-              // to enable scrolling with mouse & stylus.
-              scrollBehavior: TouchMouseScrollBehavior(),
-              debugShowCheckedModeBanner: false,
-              // Fix cupertino UI text color issue by override text color
-              cupertino: (context, __) => CupertinoAppData(
-                  theme: CupertinoThemeData(
-                    // TODO: REIMPLEMENT UPDATE LOGIC
-                      brightness: SettingsProvider.getInstance()
-                          .themeType
-                          .getBrightness(),
-                      textTheme: CupertinoTextThemeData(
-                          textStyle: TextStyle(
-                              color: PlatformX.getTheme(context, primarySwatch)
-                                  .textTheme
-                                  .bodyLarge!
-                                  .color)))),
-              material: (context, __) => MaterialAppData(
-                  theme: PlatformX.getTheme(context, primarySwatch)),
-              // Configure i18n delegates.
-              localizationsDelegates: const [
-                // [S] is a generated class that contains all the strings in the
-                // app for l10n.
-                S.delegate,
-                GlobalMaterialLocalizations.delegate,
-                GlobalWidgetsLocalizations.delegate,
-                GlobalCupertinoLocalizations.delegate
-              ],
-              // TODO: REIMPLEMENT UPDATE LOGIC
-              locale: LanguageManager.toLocale(
-                  SettingsProvider.getInstance().language),
-              supportedLocales: S.delegate.supportedLocales,
-              onUnknownRoute: (settings) => throw AssertionError(
-                  "ERROR: onUnknownRoute() has been called inside the root navigator.\nDevelopers are not supposed to push on this Navigator. There should be something wrong in the code."),
-              onGenerateInitialRoutes: (String name) => [
-                PageRedirect(
-                  settings: RouteSettings(name: name),
-                ).page()
-              ],
-              onGenerateRoute: (settings) =>
-                  PageRedirect(settings: settings).page(),
-              navigatorKey: Get.key,
-              initialRoute: '/home',
-            ),
-          ),
-        );
-      },
-    );
+              // [DynamicThemeController] enables the app to change between dark/light
+              // theme without restart on iOS.
+              return DynamicThemeController(
+                lightTheme: Constant.lightTheme(
+                    PlatformX.isCupertino(context), primarySwatch),
+                darkTheme: Constant.darkTheme(
+                    PlatformX.isCupertino(context), primarySwatch),
+                child: Material(
+                  child: PlatformApp(
+                    // Remember? We have just defined this scroll behavior class above
+                    // to enable scrolling with mouse & stylus.
+                    scrollBehavior: TouchMouseScrollBehavior(),
+                    debugShowCheckedModeBanner: false,
+                    // Fix cupertino UI text color issue by override text color
+                    cupertino: (context, __) => CupertinoAppData(
+                        theme: CupertinoThemeData(
+                            brightness: controller.themeType.getBrightness(),
+                            textTheme: CupertinoTextThemeData(
+                                textStyle: TextStyle(
+                                    color: PlatformX.getTheme(
+                                            context, primarySwatch)
+                                        .textTheme
+                                        .bodyLarge!
+                                        .color)))),
+                    material: (context, __) => MaterialAppData(
+                        theme: PlatformX.getTheme(context, primarySwatch)),
+                    // Configure i18n delegates.
+                    localizationsDelegates: const [
+                      // [S] is a generated class that contains all the strings in the
+                      // app for l10n.
+                      S.delegate,
+                      GlobalMaterialLocalizations.delegate,
+                      GlobalWidgetsLocalizations.delegate,
+                      GlobalCupertinoLocalizations.delegate
+                    ],
+                    locale: LanguageManager.toLocale(controller.language),
+                    supportedLocales: S.delegate.supportedLocales,
+                    onUnknownRoute: (settings) => throw AssertionError(
+                        "ERROR: onUnknownRoute() has been called inside the root navigator.\nDevelopers are not supposed to push on this Navigator. There should be something wrong in the code."),
+                    onGenerateInitialRoutes: (String name) => [
+                      PageRedirect(
+                        settings: RouteSettings(name: name),
+                      ).page()
+                    ],
+                    onGenerateRoute: (settings) =>
+                        PageRedirect(settings: settings).page(),
+                    navigatorKey: Get.key,
+                    initialRoute: '/home',
+                  ),
+                ),
+              );
+            }));
 
     if (PlatformX.isAndroid || PlatformX.isIOS) {
       // Wrap mainApp with [FGBGNotifier] to listen to ForeGround / BackGround events.
@@ -297,15 +289,15 @@ class DanxiApp extends StatelessWidget {
 
     // Init FDUHoleProvider. This object provides some global states about
     // FDUHole such as the current division and the json web token.
-    var fduHoleProvider = FDUHoleProvider();
+    var fduHoleProvider = FDUHoleController();
     // Init OpenTreeHoleRepository with the provider. This is the api implementations
     // of OpenTreeHole.
-    FDUHoleProvider.init(fduHoleProvider);
+    FDUHoleController.init(fduHoleProvider);
 
-    // Register some global providers
-    Get.put<SettingsProvider>(SettingsProvider.getInstance(), permanent: true);
+    Get.put<SettingsController>(SettingsController.getInstance(), permanent: true);
     Get.put<NotificationProvider>(NotificationProvider(), permanent: true);
-    Get.put<FDUHoleProvider>(FDUHoleProvider.getInstance(), permanent: true);
+    Get.put<FDUHoleController>(FDUHoleController.getInstance(),
+        permanent: true);
 
     // Wrap the whole app with [Phoenix] to enable fast reload. When user
     // logouts the Fudan UIS account, the whole app will be reloaded.

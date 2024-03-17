@@ -23,21 +23,24 @@ import 'package:dan_xi/page/opentreehole/hole_editor.dart';
 import 'package:dan_xi/provider/state_provider.dart';
 import 'package:dan_xi/util/opentreehole/editor_object.dart';
 import 'package:flutter/foundation.dart';
+import 'package:get/get.dart';
 
 /// A [ChangeNotifier] that exports some global states about FDUHole to the app.
 ///
 /// Also see:
 /// * [StateProvider]
-class FDUHoleProvider with ChangeNotifier {
-  static late FDUHoleProvider _instance;
+class FDUHoleController extends GetxController {
+  static late FDUHoleController _instance;
 
-  factory FDUHoleProvider.getInstance() => _instance;
+  static FDUHoleController get to => Get.find();
 
-  static void init(FDUHoleProvider injectProvider) {
+  factory FDUHoleController.getInstance() => _instance;
+
+  static void init(FDUHoleController injectProvider) {
     _instance = injectProvider;
   }
 
-  FDUHoleProvider();
+  FDUHoleController();
 
   /// Caches of [OTEditor].
   final Map<EditorObject?, PostEditorText> editorCache = {};
@@ -51,7 +54,7 @@ class FDUHoleProvider with ChangeNotifier {
 
   set currentDivision(OTDivision? currentDivision) {
     _currentDivision = currentDivision;
-    notifyListeners();
+    update();
   }
 
   /// The token used for session authentication.
@@ -66,7 +69,7 @@ class FDUHoleProvider with ChangeNotifier {
 
   set userInfo(OTUser? value) {
     _userInfo = value;
-    notifyListeners();
+    update();
   }
 
   /// Cached OTDivisions.
@@ -79,7 +82,7 @@ class FDUHoleProvider with ChangeNotifier {
 
   set divisionCache(List<OTDivision> value) {
     _divisionCache = List.unmodifiable(value);
-    notifyListeners();
+    update();
   }
 
   /// Whether the user has logged in and we have fetched his/her profile.

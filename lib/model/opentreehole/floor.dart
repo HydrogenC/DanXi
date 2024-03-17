@@ -81,7 +81,7 @@ class OTFloor {
       this.dislike,
       this.disliked);
 
-  String? get filteredContent => SettingsProvider.getInstance().cleanMode
+  String? get filteredContent => SettingsController.getInstance().cleanMode
       ? CleanModeFilter.cleanText(content)
       : content;
 

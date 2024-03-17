@@ -159,10 +159,10 @@ class OTTitle extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     List<OTDivision> divisions =
-        context.select<FDUHoleProvider, List<OTDivision>>(
+        context.select<FDUHoleController, List<OTDivision>>(
             (value) => value.divisionCache);
     OTDivision? division = context
-        .select<FDUHoleProvider, OTDivision?>((value) => value.currentDivision);
+        .select<FDUHoleController, OTDivision?>((value) => value.currentDivision);
     int currentIndex = 0;
     if (division != null) {
       currentIndex = divisions.indexOf(division);
@@ -177,7 +177,7 @@ class OTTitle extends StatelessWidget {
           singleChoice: true,
           defaultChoice: currentIndex,
           onChoice: (Tag tag, list) {
-            division = context.read<FDUHoleProvider>().currentDivision =
+            division = context.read<FDUHoleController>().currentDivision =
                 divisions.firstWhere((element) => element.name == tag.tagTitle);
             ChangeDivisionEvent(division!).fire();
           },
@@ -204,7 +204,7 @@ class TreeHoleSubpage extends PlatformSubpage<TreeHoleSubpage> {
               ? Icons.notifications
               : CupertinoIcons.bell),
           () {
-            if (cxt.read<FDUHoleProvider>().isUserInitialized) {
+            if (cxt.read<FDUHoleController>().isUserInitialized) {
               smartNavigatorPush(cxt, '/bbs/messages',
                   forcePushOnMainNavigator: true);
             }
@@ -218,12 +218,12 @@ class TreeHoleSubpage extends PlatformSubpage<TreeHoleSubpage> {
   @override
   Create<List<AppBarButtonItem>> get trailing => (cxt) {
         void onChangeSortOrder(BuildContext context, SortOrder newSortOrder) {
-          context.read<SettingsProvider>().fduholeSortOrder = newSortOrder;
+          context.read<SettingsController>().fduholeSortOrder = newSortOrder;
           RefreshListEvent().fire();
         }
 
         return [
-          if (cxt.select<FDUHoleProvider, bool>(
+          if (cxt.select<FDUHoleController, bool>(
               (value) => value.userInfo?.is_admin ?? false)) ...[
             AppBarButtonItem(
                 S.of(cxt).reports,
@@ -260,7 +260,7 @@ class TreeHoleSubpage extends PlatformSubpage<TreeHoleSubpage> {
               Icon(PlatformX.isMaterial(cxt)
                   ? Icons.visibility
                   : CupertinoIcons.eye), () {
-            if (cxt.read<FDUHoleProvider>().isUserInitialized) {
+            if (cxt.read<FDUHoleController>().isUserInitialized) {
               smartNavigatorPush(cxt, '/bbs/discussions',
                   arguments: {'showSubscribedDiscussion': true},
                   forcePushOnMainNavigator: true);
@@ -271,7 +271,7 @@ class TreeHoleSubpage extends PlatformSubpage<TreeHoleSubpage> {
               Icon(PlatformX.isMaterial(cxt)
                   ? Icons.star_outline
                   : CupertinoIcons.star), () {
-            if (cxt.read<FDUHoleProvider>().isUserInitialized) {
+            if (cxt.read<FDUHoleController>().isUserInitialized) {
               smartNavigatorPush(cxt, '/bbs/discussions',
                   arguments: {'showFavoredDiscussion': true},
                   forcePushOnMainNavigator: true);
@@ -279,7 +279,7 @@ class TreeHoleSubpage extends PlatformSubpage<TreeHoleSubpage> {
           }),
           AppBarButtonItem(
               S.of(cxt).new_post, Icon(PlatformIcons(cxt).addCircled), () {
-            if (cxt.read<FDUHoleProvider>().isUserInitialized) {
+            if (cxt.read<FDUHoleController>().isUserInitialized) {
               CreateNewPostEvent().fire();
             }
           }),
@@ -347,10 +347,10 @@ class TreeHoleSubpageState extends PlatformSubpageState<TreeHoleSubpage> {
 
   /// Fields related to the display states.
   static int getDivisionId(BuildContext context) =>
-      context.read<FDUHoleProvider>().currentDivision?.division_id ?? 1;
+      context.read<FDUHoleController>().currentDivision?.division_id ?? 1;
 
   FoldBehavior? get foldBehavior => foldBehaviorFromInternalString(
-      context.read<FDUHoleProvider>().userInfo?.config?.show_folded);
+      context.read<FDUHoleController>().userInfo?.config?.show_folded);
 
   FileImage? _backgroundImage;
 
@@ -364,9 +364,9 @@ class TreeHoleSubpageState extends PlatformSubpageState<TreeHoleSubpage> {
     }
     // Initialize the user token from shared preferences.
     // If no token, NotLoginError will be thrown.
-    if (!context.read<FDUHoleProvider>().isUserInitialized) {
+    if (!context.read<FDUHoleController>().isUserInitialized) {
       await OpenTreeHoleRepository.getInstance().initializeRepo();
-      context.read<FDUHoleProvider>().currentDivision =
+      context.read<FDUHoleController>().currentDivision =
           OpenTreeHoleRepository.getInstance().getDivisions().firstOrNull;
       settingsPageKey.currentState?.setState(() {});
     }
@@ -407,7 +407,7 @@ class TreeHoleSubpageState extends PlatformSubpageState<TreeHoleSubpage> {
           return OpenTreeHoleRepository.getInstance().loadHoles(
               time, getDivisionId(context),
               tag: _tagFilter,
-              sortOrder: context.read<SettingsProvider>().fduholeSortOrder);
+              sortOrder: context.read<SettingsController>().fduholeSortOrder);
         }).call(page);
 
         // If not more posts, notify ListView that we reached the end.
@@ -415,11 +415,11 @@ class TreeHoleSubpageState extends PlatformSubpageState<TreeHoleSubpage> {
 
         // Filter blocked posts
         List<OTTag> hiddenTags =
-            SettingsProvider.getInstance().hiddenTags ?? [];
+            SettingsController.getInstance().hiddenTags ?? [];
         loadedPost?.removeWhere((element) => element.tags!.any((thisTag) =>
             hiddenTags.any((blockTag) => thisTag.name == blockTag.name)));
         // Filter hidden posts
-        List<int> hiddenPosts = SettingsProvider.getInstance().hiddenHoles;
+        List<int> hiddenPosts = SettingsController.getInstance().hiddenHoles;
         loadedPost?.removeWhere((element) =>
             hiddenPosts.any((blockPost) => element.hole_id == blockPost));
 
@@ -440,7 +440,7 @@ class TreeHoleSubpageState extends PlatformSubpageState<TreeHoleSubpage> {
         await OpenTreeHoleRepository.getInstance().getFavoriteHoleId();
       } else if (_postsType == PostsType.SUBSCRIBED_DISCUSSION) {
         await OpenTreeHoleRepository.getInstance().getSubscribedHoleId();
-      } else if (context.read<FDUHoleProvider>().isUserInitialized) {
+      } else if (context.read<FDUHoleController>().isUserInitialized) {
         await OpenTreeHoleRepository.getInstance()
             .loadDivisions(useCache: false);
         await refreshSelf();
@@ -623,7 +623,7 @@ class TreeHoleSubpageState extends PlatformSubpageState<TreeHoleSubpage> {
   }
 
   Widget _buildPageBody(BuildContext context, bool buildTabBar) {
-    _backgroundImage = SettingsProvider.getInstance().backgroundImage;
+    _backgroundImage = SettingsController.getInstance().backgroundImage;
     return Container(
       decoration: _backgroundImage == null
           ? null
@@ -815,7 +815,7 @@ class TimeBasedLoadAdaptLayer<T> {
 
 typedef TimeBasedDataReceiver<T> = Future<List<T>?> Function(T? lastElement);
 
-Widget buildForumTopBar() => Selector<FDUHoleProvider, bool>(
+Widget buildForumTopBar() => Selector<FDUHoleController, bool>(
     selector: (_, model) => model.isUserInitialized,
     builder: (context, userInitialized, _) => userInitialized
         ? Row(

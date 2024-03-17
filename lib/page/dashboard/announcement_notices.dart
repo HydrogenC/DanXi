@@ -31,15 +31,18 @@ import 'package:dan_xi/widget/libraries/with_scrollbar.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_platform_widgets/flutter_platform_widgets.dart';
+import 'package:get/get.dart';
 
 /// A list page showing announcement from developers.
 class AnnouncementList extends StatefulWidget {
-  final Map<String, dynamic>? arguments;
+  late final Map<String, dynamic>? arguments;
 
   @override
   AnnouncementListState createState() => AnnouncementListState();
 
-  const AnnouncementList({super.key, this.arguments});
+  AnnouncementList({super.key}){
+    arguments = Get.arguments;
+  }
 }
 
 class AnnouncementListState extends State<AnnouncementList> {

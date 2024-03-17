@@ -71,7 +71,7 @@ class TimeTableRepository extends BaseRepositoryWithDio {
 
   Future<TimeTable?> _loadTimeTableRemotely({DateTime? startTime}) async {
     Future<String?> getAppropriateSemesterId() async {
-      String? setValue = SettingsProvider.getInstance().timetableSemester;
+      String? setValue = SettingsController.getInstance().timetableSemester;
       if (setValue == null || setValue.isEmpty) {
         return (await cookieJar!.loadForRequest(Uri.parse(HOST)))
             .firstWhere((element) => element.name == "semester.id")
@@ -95,7 +95,7 @@ class TimeTableRepository extends BaseRepositoryWithDio {
     return TimeTable.fromHtml(
         startTime ??
             DateTime.tryParse(
-                SettingsProvider.getInstance().thisSemesterStartDate ?? "") ??
+                SettingsController.getInstance().thisSemesterStartDate ?? "") ??
             Constant.DEFAULT_SEMESTER_START_DATE,
         tablePage.data!);
   }

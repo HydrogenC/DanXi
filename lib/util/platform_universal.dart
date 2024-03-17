@@ -134,11 +134,11 @@ class PlatformX {
       platform_impl.isCupertino(context);
 
   static bool get isDarkMode {
-    final type = SettingsProvider.getInstance().themeType;
+    final type = SettingsController.getInstance().themeType;
     return type.getBrightness() == Brightness.dark;
   }
 
-  static bool isDebugMode(_) => SettingsProvider.getInstance().debugMode;
+  static bool isDebugMode(_) => SettingsController.getInstance().debugMode;
 
   static Future<bool> get galleryStorageGranted async {
     if (isAndroid) {

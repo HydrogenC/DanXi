@@ -174,7 +174,7 @@ class OTHoleWidget extends StatelessWidget {
                                 forcePushOnMainNavigator: true);
                           },
                               context
-                                  .read<SettingsProvider>()
+                                  .read<SettingsController>()
                                   .useAccessibilityColoring),
                           Row(
                             //mainAxisSize: MainAxisSize.min,
@@ -426,7 +426,7 @@ class OTFloorWidget extends StatelessWidget {
                     smartNavigatorPush(context, '/bbs/discussions',
                         arguments: {"tagFilter": tagName},
                         forcePushOnMainNavigator: true);
-                  }, SettingsProvider.getInstance().useAccessibilityColoring)),
+                  }, SettingsController.getInstance().useAccessibilityColoring)),
             Padding(
               padding: const EdgeInsets.fromLTRB(2, 4, 2, 4),
               child: Row(

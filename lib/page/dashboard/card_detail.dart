@@ -27,6 +27,7 @@ import 'package:dan_xi/widget/opentreehole/tag_selector/tag.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_platform_widgets/flutter_platform_widgets.dart';
+import 'package:get/get.dart';
 import 'package:intl/intl.dart';
 
 /// A list page showing user's campus card spending history.
@@ -34,12 +35,14 @@ import 'package:intl/intl.dart';
 /// Arguments:
 /// [CardInfo] cardInfo: user's card info.
 class CardDetailPage extends StatefulWidget {
-  final Map<String, dynamic>? arguments;
+  late final Map<String, dynamic>? arguments;
 
   @override
   CardDetailPageState createState() => CardDetailPageState();
 
-  const CardDetailPage({super.key, this.arguments});
+  CardDetailPage({super.key}){
+    arguments = Get.arguments;
+  }
 }
 
 class CardDetailPageState extends State<CardDetailPage> {

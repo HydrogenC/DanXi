@@ -41,7 +41,7 @@ class DiningHallCrowdednessFeature extends Feature {
   ConnectionStatus _status = ConnectionStatus.NONE;
 
   Future<void> _loadCrowdednessSummary(PersonInfo? info) async {
-    Campus preferredCampus = SettingsProvider.getInstance().campus;
+    Campus preferredCampus = SettingsController.getInstance().campus;
     try {
       _trafficInfo = await DataCenterRepository.getInstance()
           .getCrowdednessInfo(info, preferredCampus.index);

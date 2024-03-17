@@ -48,18 +48,18 @@ import 'package:dan_xi/model/opentreehole/history.dart';
 /// During to some history reasons, this repository's state can be complex.
 /// Please read the method comments carefully before using them.
 ///
-/// All states have been moved to [FDUHoleProvider], which is a [ChangeNotifier];
+/// All states have been moved to [FDUHoleController], which is a [ChangeNotifier];
 /// any field in this class should be considered as temporary variables, e.g. caches.
 class OpenTreeHoleRepository extends BaseRepositoryWithDio {
   static final _instance = OpenTreeHoleRepository._();
 
   factory OpenTreeHoleRepository.getInstance() => _instance;
 
-  static final String _BASE_URL = SettingsProvider.getInstance().fduholeBaseUrl;
+  static final String _BASE_URL = SettingsController.getInstance().fduholeBaseUrl;
   static final String _BASE_AUTH_URL =
-      SettingsProvider.getInstance().authBaseUrl;
+      SettingsController.getInstance().authBaseUrl;
   static final String _IMAGE_BASE_URL =
-      SettingsProvider.getInstance().imageBaseUrl;
+      SettingsController.getInstance().imageBaseUrl;
 
   /// Cached floors, used by [mentions].
   final Map<int, OTFloor> _floorCache = {};
@@ -74,22 +74,22 @@ class OpenTreeHoleRepository extends BaseRepositoryWithDio {
   String? lastUploadToken;
 
   /// Short aliases.
-  FDUHoleProvider get provider => FDUHoleProvider.getInstance();
+  FDUHoleController get provider => FDUHoleController.getInstance();
 
   /// Logout, removing all cached data, tokens, on-disk local settings, etc.
   ///
   /// It also unregisters the push notification token.
   Future<void> logout() async {
     if (!provider.isUserInitialized) {
-      if (SettingsProvider.getInstance().fduholeToken == null) {
+      if (SettingsController.getInstance().fduholeToken == null) {
         return;
       } else {
-        provider.token = SettingsProvider.getInstance().fduholeToken;
+        provider.token = SettingsController.getInstance().fduholeToken;
       }
     }
     await deletePushNotificationToken(await PlatformX.getUniqueDeviceId());
     clearCache();
-    SettingsProvider.getInstance().deleteAllFduholeData();
+    SettingsController.getInstance().deleteAllFduholeData();
   }
 
   /// Clear all cached data and in-memory states (i.e. token and user info that have been loaded).
@@ -130,7 +130,7 @@ class OpenTreeHoleRepository extends BaseRepositoryWithDio {
         "$_BASE_AUTH_URL/refresh",
         () => provider.token,
         (token) => provider.token =
-            SettingsProvider.getInstance().fduholeToken = token));
+            SettingsController.getInstance().fduholeToken = token));
     dio.interceptors.add(
         UserAgentInterceptor(userAgent: Uri.encodeComponent(Constant.version)));
   }
@@ -141,8 +141,8 @@ class OpenTreeHoleRepository extends BaseRepositoryWithDio {
   ///
   /// If the token is not valid, it will throw a [NotLoginError].
   void initializeToken() {
-    if (SettingsProvider.getInstance().fduholeToken != null) {
-      provider.token = SettingsProvider.getInstance().fduholeToken;
+    if (SettingsController.getInstance().fduholeToken != null) {
+      provider.token = SettingsController.getInstance().fduholeToken;
     } else {
       throw NotLoginError("No token");
     }
@@ -239,7 +239,7 @@ class OpenTreeHoleRepository extends BaseRepositoryWithDio {
       "email": email,
       "verification": int.parse(verifyCode),
     });
-    return SettingsProvider.getInstance().fduholeToken =
+    return SettingsController.getInstance().fduholeToken =
         JWToken.fromJsonWithVerification(response.data!);
   }
 
@@ -250,7 +250,7 @@ class OpenTreeHoleRepository extends BaseRepositoryWithDio {
       'email': username,
       'password': password,
     });
-    return SettingsProvider.getInstance().fduholeToken =
+    return SettingsController.getInstance().fduholeToken =
         JWToken.fromJsonWithVerification(response.data!);
   }
 

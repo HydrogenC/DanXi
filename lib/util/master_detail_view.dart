@@ -20,6 +20,7 @@ import 'package:dan_xi/util/master_detail_utils.dart';
 import 'package:dan_xi/util/platform_universal.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_platform_widgets/flutter_platform_widgets.dart';
+import 'package:get/get.dart';
 
 GlobalKey<NavigatorState>? navigatorGlobalKey;
 
@@ -116,13 +117,9 @@ Future<T?> smartNavigatorPush<T extends Object>(
     BuildContext context, String routeName,
     {Object? arguments, bool forcePushOnMainNavigator = false}) {
   if (isTablet(context) && !forcePushOnMainNavigator) {
-    return detailNavigatorKey.currentState!
-        .pushNamed<T?>(routeName, arguments: arguments);
-  } else if (navigatorGlobalKey?.currentState != null) {
-    return navigatorGlobalKey!.currentState!
-        .pushNamed<T?>(routeName, arguments: arguments);
+    return Get.toNamed<T?>(routeName, arguments: arguments)!;
   } else {
-    return Navigator.of(context).pushNamed<T?>(routeName, arguments: arguments);
+    return Get.toNamed<T?>(routeName, arguments: arguments)!;
   }
 }
 

@@ -63,7 +63,7 @@ class DynamicThemeControllerState extends State<DynamicThemeController>
 
   @override
   Widget build(BuildContext context) {
-    final type = SettingsProvider.getInstance().themeType;
+    final type = SettingsController.getInstance().themeType;
 
     var effectiveBrightness = _brightness;
     if (type == ThemeType.LIGHT) {
@@ -76,35 +76,5 @@ class DynamicThemeControllerState extends State<DynamicThemeController>
             ? widget.lightTheme
             : widget.darkTheme,
         child: widget.child);
-  }
-}
-
-/// A Widget to decide the system overlay style based on the theme.
-class ThemedSystemOverlay extends StatelessWidget {
-  final Widget child;
-
-  const ThemedSystemOverlay({super.key, required this.child});
-
-  @override
-  Widget build(BuildContext context) {
-    var baseStyle = Theme.of(context).brightness == Brightness.light
-        ? SystemUiOverlayStyle.dark
-        : SystemUiOverlayStyle.light;
-    if (PlatformX.isAndroid) {
-      // Copy from Flutter's [AnimatedPhysicalModel] widget.
-      final bottomColor = ElevationOverlay.applySurfaceTint(
-          Theme.of(context).colorScheme.background,
-          Theme.of(context).colorScheme.surfaceTint,
-          3.0);
-
-      baseStyle = baseStyle.copyWith(
-          systemNavigationBarColor: bottomColor,
-          systemNavigationBarIconBrightness:
-              bottomColor.computeLuminance() > 0.5
-                  ? Brightness.dark
-                  : Brightness.light);
-    }
-    return AnnotatedRegion<SystemUiOverlayStyle>(
-        value: baseStyle, child: child);
   }
 }

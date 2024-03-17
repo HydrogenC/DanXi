@@ -96,7 +96,7 @@ class PostgraduateTimetableRepository extends BaseRepositoryWithDio {
     return TimeTable.fromPGJson(
         startTime ??
             DateTime.tryParse(
-                SettingsProvider.getInstance().thisSemesterStartDate ?? "") ??
+                SettingsController.getInstance().thisSemesterStartDate ?? "") ??
             Constant.DEFAULT_SEMESTER_START_DATE,
         coursePage.data is Map
             ? coursePage.data
@@ -126,7 +126,7 @@ class PostgraduateTimetableRepository extends BaseRepositoryWithDio {
   TimeTable loadTimeTableLocally() {
     // FIXME: Do not read this should-be-private field everywhere!
     XSharedPreferences preferences =
-        SettingsProvider.getInstance().preferences!;
+        SettingsController.getInstance().preferences!;
     if (preferences.containsKey(TimeTableRepository.KEY_TIMETABLE_CACHE)) {
       return TimeTable.fromJson(jsonDecode(
           preferences.getString(TimeTableRepository.KEY_TIMETABLE_CACHE)!));

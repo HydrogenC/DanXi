@@ -40,8 +40,8 @@ class Watermark {
               TextStyle(
                   color: PlatformX.isDarkMode
                       ? Color(
-                      SettingsProvider.getInstance().darkWatermarkColor)
-                      : Color(SettingsProvider.getInstance()
+                      SettingsController.getInstance().darkWatermarkColor)
+                      : Color(SettingsController.getInstance()
                       .lightWatermarkColor),
                   fontSize: 36,
                   decoration: TextDecoration.none),

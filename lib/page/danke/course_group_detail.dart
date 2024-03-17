@@ -205,7 +205,7 @@ class CourseGroupDetailState extends State<CourseGroupDetail> {
 
   @override
   Widget build(BuildContext context) {
-    _backgroundImage = SettingsProvider.getInstance().backgroundImage;
+    _backgroundImage = SettingsController.getInstance().backgroundImage;
     _courseGroupFuture ??= _fetchCourseGroup();
     _reviewListFuture ??= _loadContent();
 

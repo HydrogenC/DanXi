@@ -68,7 +68,7 @@ class DankeSubPageState extends PlatformSubpageState<DankeSubPage> {
           S.of(context).curriculum_ratings_assessment_words.split(';');
     }
 
-    _backgroundImage = SettingsProvider.getInstance().backgroundImage;
+    _backgroundImage = SettingsController.getInstance().backgroundImage;
     return Container(
       // padding top
       decoration: _backgroundImage == null
@@ -110,7 +110,7 @@ class DankeSubPageState extends PlatformSubpageState<DankeSubPage> {
   }
 
   Future<CourseReview?> _loadRandomReview({bool forceRefetch = false}) async {
-    if (!Get.find<FDUHoleProvider>().isUserInitialized) {
+    if (!Get.find<FDUHoleController>().isUserInitialized) {
       await OpenTreeHoleRepository.getInstance().initializeUser();
       settingsPageKey.currentState?.setState(() {});
     }

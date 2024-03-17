@@ -26,18 +26,21 @@ import 'package:dan_xi/widget/libraries/top_controller.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_platform_widgets/flutter_platform_widgets.dart';
+import 'package:get/get.dart';
 
 /// A list page showing AAO notices.
 ///
 /// Arguments:
 /// [List<Notice>] initialData: the initial data to be shown as soon as the page's displayed.
 class AAONoticesList extends StatefulWidget {
-  final Map<String, dynamic>? arguments;
+  late final Map<String, dynamic>? arguments;
 
   @override
   AAONoticesListState createState() => AAONoticesListState();
 
-  const AAONoticesList({super.key, this.arguments});
+  AAONoticesList({super.key}) {
+    arguments = Get.arguments;
+  }
 }
 
 class AAONoticesListState extends State<AAONoticesList> {

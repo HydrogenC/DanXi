@@ -49,8 +49,8 @@ class NewShortcutDialogState extends State<NewShortcutDialog> {
     // Validate URL
     try {
       await Dio().head(_linkTextFieldController.text);
-      SettingsProvider.getInstance().dashboardWidgetsSequence =
-          SettingsProvider.getInstance().dashboardWidgetsSequence.followedBy([
+      SettingsController.getInstance().dashboardWidgetsSequence =
+          SettingsController.getInstance().dashboardWidgetsSequence.followedBy([
             DashboardCard(Constant.FEATURE_CUSTOM_CARD,
             _nameTextFieldController.text, _linkTextFieldController.text, true)
       ]).toList();

@@ -37,7 +37,11 @@ import 'package:uuid/uuid.dart';
 import 'package:get/get.dart';
 
 class DiagnosticConsole extends StatefulWidget {
-  const DiagnosticConsole({super.key});
+  late final Map<String, dynamic>? arguments;
+
+  DiagnosticConsole({super.key}){
+    arguments = Get.arguments;
+  }
 
   @override
   DiagnosticConsoleState createState() => DiagnosticConsoleState();
@@ -47,7 +51,7 @@ class DiagnosticConsoleState extends State<DiagnosticConsole> {
   final StringBufferNotifier _console = StringBufferNotifier();
 
   late List<DiagnosticMethod> diagnoses;
-  late Map<String, dynamic>? arguments;
+  
 
   @override
   void initState() {
@@ -59,7 +63,6 @@ class DiagnosticConsoleState extends State<DiagnosticConsole> {
       diagnoseUrl
     ];
     unawaited(diagnose());
-    arguments = Get.arguments;
   }
 
   Future<void> diagnose() async {
@@ -77,13 +80,13 @@ class DiagnosticConsoleState extends State<DiagnosticConsole> {
 
   Future<void> diagnoseFDUHole() async {
     _console.writeln(
-        "FDUHole is user initialized: ${context.read<FDUHoleProvider>().isUserInitialized}");
+        "FDUHole is user initialized: ${context.read<FDUHoleController>().isUserInitialized}");
     _console.writeln(
         "FDUHole is user admin: ${OpenTreeHoleRepository.getInstance().isAdmin}");
     _console.writeln(
         "FDUHole Push Token last uploaded on this device: ${OpenTreeHoleRepository.getInstance().lastUploadToken}");
     _console.writeln(
-        "FDUHole Token stored: ${context.read<SettingsProvider>().fduholeToken}");
+        "FDUHole Token stored: ${context.read<SettingsController>().fduholeToken}");
 
     String? deviceId;
     try {
@@ -105,11 +108,11 @@ class DiagnosticConsoleState extends State<DiagnosticConsole> {
 
   Future<void> diagnoseUrl() async {
     _console
-        .writeln("Base URL: ${SettingsProvider.getInstance().fduholeBaseUrl}");
+        .writeln("Base URL: ${SettingsController.getInstance().fduholeBaseUrl}");
     _console.writeln(
-        "Base Auth URL: ${SettingsProvider.getInstance().authBaseUrl}");
+        "Base Auth URL: ${SettingsController.getInstance().authBaseUrl}");
     _console.writeln(
-        "Image Base URL: ${SettingsProvider.getInstance().imageBaseUrl}");
+        "Image Base URL: ${SettingsController.getInstance().imageBaseUrl}");
   }
 
   Future<void> diagnoseDanXi() async {
@@ -120,7 +123,7 @@ class DiagnosticConsoleState extends State<DiagnosticConsole> {
     _console.writeln("Media Query: ${MediaQuery.of(context)}");
 
     _console.writeln("Everything we stored in the local device:");
-    var allKeys = await context.read<SettingsProvider>().preferences?.getKeys();
+    var allKeys = await context.read<SettingsController>().preferences?.getKeys();
     if (allKeys != null) {
       for (var key in allKeys) {
         // Skip some keys
@@ -128,7 +131,7 @@ class DiagnosticConsoleState extends State<DiagnosticConsole> {
 
         _console.writeln("Key: $key");
         _console.writeln(
-            "Value: ${context.read<SettingsProvider>().preferences?.getString(key)}");
+            "Value: ${context.read<SettingsController>().preferences?.getString(key)}");
       }
     } else {
       _console.writeln("Nothing!");
@@ -156,9 +159,9 @@ class DiagnosticConsoleState extends State<DiagnosticConsole> {
         "Input new base url (leave empty to reset to ${Constant.FDUHOLE_BASE_URL})");
     if (fduholeBaseUrl == null || !mounted) return;
     if (fduholeBaseUrl.isEmpty) {
-      SettingsProvider.getInstance().fduholeBaseUrl = Constant.FDUHOLE_BASE_URL;
+      SettingsController.getInstance().fduholeBaseUrl = Constant.FDUHOLE_BASE_URL;
     } else {
-      SettingsProvider.getInstance().fduholeBaseUrl = fduholeBaseUrl;
+      SettingsController.getInstance().fduholeBaseUrl = fduholeBaseUrl;
     }
     Noticing.showNotice(context, "Restart app to take effects");
   }
@@ -168,9 +171,9 @@ class DiagnosticConsoleState extends State<DiagnosticConsole> {
         "Input new base auth url (leave empty to reset to ${Constant.AUTH_BASE_URL})");
     if (baseAuthUrl == null || !mounted) return;
     if (baseAuthUrl.isEmpty) {
-      SettingsProvider.getInstance().authBaseUrl = Constant.AUTH_BASE_URL;
+      SettingsController.getInstance().authBaseUrl = Constant.AUTH_BASE_URL;
     } else {
-      SettingsProvider.getInstance().authBaseUrl = baseAuthUrl;
+      SettingsController.getInstance().authBaseUrl = baseAuthUrl;
     }
     Noticing.showNotice(context, "Restart app to take effects");
   }
@@ -180,9 +183,9 @@ class DiagnosticConsoleState extends State<DiagnosticConsole> {
         "Input new image base url (leave empty to reset to ${Constant.IMAGE_BASE_URL}))");
     if (imageBaseUrl == null || !mounted) return;
     if (imageBaseUrl.isEmpty) {
-      SettingsProvider.getInstance().imageBaseUrl = Constant.IMAGE_BASE_URL;
+      SettingsController.getInstance().imageBaseUrl = Constant.IMAGE_BASE_URL;
     } else {
-      SettingsProvider.getInstance().imageBaseUrl = imageBaseUrl;
+      SettingsController.getInstance().imageBaseUrl = imageBaseUrl;
     }
     Noticing.showNotice(context, "Restart app to take effects");
   }
@@ -210,9 +213,9 @@ class DiagnosticConsoleState extends State<DiagnosticConsole> {
     String? ua = await Noticing.showInputDialog(context, "Input user agent");
     if (ua == null || !mounted) return;
     if (ua.isEmpty) {
-      context.read<SettingsProvider>().customUserAgent = null;
+      context.read<SettingsController>().customUserAgent = null;
     } else {
-      context.read<SettingsProvider>().customUserAgent = ua;
+      context.read<SettingsController>().customUserAgent = ua;
     }
     Noticing.showNotice(context, "Restart app to take effects");
   }

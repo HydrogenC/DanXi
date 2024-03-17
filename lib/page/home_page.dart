@@ -137,7 +137,7 @@ class HomePageState extends State<HomePage> with WidgetsBindingObserver {
       // Don't show Dashboard in visitor mode
       if (StateProvider.personInfo.value?.group != UserGroup.VISITOR)
         HomeSubpage(key: dashboardPageKey),
-      if (!SettingsProvider.getInstance().hideHole)
+      if (!SettingsController.getInstance().hideHole)
         TreeHoleSubpage(key: treeholePageKey),
       // Don't show Timetable in visitor mode
       DankeSubPage(key: dankePageKey),
@@ -211,7 +211,7 @@ class HomePageState extends State<HomePage> with WidgetsBindingObserver {
     if (!LoginDialog.dialogShown) {
       // In case that [_preferences] is still not initialized.
       PersonInfo.removeFromSharedPreferences(
-          SettingsProvider.getInstance().preferences!);
+          SettingsController.getInstance().preferences!);
       FlutterApp.restartApp(context);
     }
   }
@@ -376,7 +376,7 @@ class HomePageState extends State<HomePage> with WidgetsBindingObserver {
     }
     // Do a quick initialization and push
     // Throw an error if the user is not logged in
-    if (!context.read<FDUHoleProvider>().isUserInitialized) {
+    if (!context.read<FDUHoleController>().isUserInitialized) {
       try {
         await OpenTreeHoleRepository.getInstance().initializeRepo();
       } catch (ignored) {}
@@ -435,7 +435,7 @@ class HomePageState extends State<HomePage> with WidgetsBindingObserver {
     String? code,
     Map<String, dynamic>? data,
   ) async {
-    if (!context.read<FDUHoleProvider>().isUserInitialized) {
+    if (!context.read<FDUHoleController>().isUserInitialized) {
       // Do a quick initialization and push
       try {
         OpenTreeHoleRepository.getInstance().initializeToken();
@@ -449,8 +449,8 @@ class HomePageState extends State<HomePage> with WidgetsBindingObserver {
   void initState() {
     super.initState();
     // Refresh the page when account changes.
-    StateProvider.personInfo.addListener(() {
-      if (StateProvider.personInfo.value != null) {
+    ever(StateProvider.personInfo, (callback) {
+      if (callback != null) {
         _rebuildPage();
         refreshSelf();
       }
@@ -484,9 +484,9 @@ class HomePageState extends State<HomePage> with WidgetsBindingObserver {
     }
     // Configure watch listeners on iOS.
     if (_needSendToWatch &&
-        SettingsProvider.getInstance().fduholeToken != null) {
+        SettingsController.getInstance().fduholeToken != null) {
       sendFduholeTokenToWatch(
-          SettingsProvider.getInstance().fduholeToken!.access!);
+          SettingsController.getInstance().fduholeToken!.access!);
       // Only send once.
       _needSendToWatch = false;
     }
@@ -533,9 +533,9 @@ class HomePageState extends State<HomePage> with WidgetsBindingObserver {
           }
           break;
         case 'get_token':
-          if (SettingsProvider.getInstance().fduholeToken != null) {
+          if (SettingsController.getInstance().fduholeToken != null) {
             sendFduholeTokenToWatch(
-                SettingsProvider.getInstance().fduholeToken!.access!);
+                SettingsController.getInstance().fduholeToken!.access!);
           } else {
             // Notify that we should send the token to watch later
             _needSendToWatch = true;
@@ -623,7 +623,7 @@ class HomePageState extends State<HomePage> with WidgetsBindingObserver {
   ///
   /// If user hasn't logged in before, request him to do so.
   void _loadPersonInfoOrLogin() {
-    var preferences = SettingsProvider.getInstance().preferences;
+    var preferences = SettingsController.getInstance().preferences;
 
     if (PersonInfo.verifySharedPreferences(preferences!)) {
       StateProvider.personInfo.value =
@@ -647,7 +647,7 @@ class HomePageState extends State<HomePage> with WidgetsBindingObserver {
               title: Text(S.of(context).login),
               onTap: () => LoginDialog.showLoginDialog(
                   context,
-                  SettingsProvider.getInstance().preferences,
+                  SettingsController.getInstance().preferences,
                   StateProvider.personInfo,
                   false),
             ),
@@ -657,78 +657,78 @@ class HomePageState extends State<HomePage> with WidgetsBindingObserver {
 
   Widget _buildBody(Widget title) {
     // Show debug button for [Dio].
-    if (PlatformX.isDebugMode(SettingsProvider.getInstance().preferences)) {
+    if (PlatformX.isDebugMode(SettingsController.getInstance().preferences)) {
       showDebugBtn(context);
     }
 
-    return Obx(() => PageWithTab(
-          child: PlatformScaffold(
-            body: LazyLoadIndexedStack(
-              index: _pageIndex.value,
-              children: _subpage,
-            ),
+    // Obx listens to page change
+    return Obx(()=> PageWithTab(
+      child: PlatformScaffold(
+        body: LazyLoadIndexedStack(
+          index: _pageIndex.value,
+          children: _subpage,
+        ),
 
-            // 2021-5-19 @w568w:
-            // Override the builder to prevent the repeatedly built states on iOS.
-            // I don't know why it works...
-            cupertinoTabChildBuilder: (_, index) => _subpage[index],
-            bottomNavBar: PlatformNavBarM3(
-              items: [
-                // Don't show Dashboard in visitor mode
-                if (StateProvider.personInfo.value?.group != UserGroup.VISITOR)
-                  BottomNavigationBarItem(
-                    icon: PlatformX.isMaterial(context)
-                        ? const Icon(Icons.dashboard)
-                        : const Icon(CupertinoIcons.square_stack_3d_up_fill),
-                    label: S.of(context).dashboard,
-                  ),
-                if (!SettingsProvider.getInstance().hideHole)
-                  BottomNavigationBarItem(
-                    icon: PlatformX.isMaterial(context)
-                        ? const Icon(Icons.forum)
-                        : const Icon(CupertinoIcons.text_bubble),
-                    label: S.of(context).forum,
-                  ),
-                BottomNavigationBarItem(
-                  icon: PlatformX.isMaterial(context)
-                      ? const Icon(Icons.egg_alt)
-                      : const Icon(CupertinoIcons.book),
-                  label: S.of(context).curriculum,
-                ),
-                // Don't show Timetable in visitor mode
-                if (StateProvider.personInfo.value?.group != UserGroup.VISITOR)
-                  BottomNavigationBarItem(
-                    icon: PlatformX.isMaterial(context)
-                        ? const Icon(Icons.calendar_today)
-                        : const Icon(CupertinoIcons.calendar),
-                    label: S.of(context).timetable,
-                  ),
-                BottomNavigationBarItem(
-                  icon: PlatformX.isMaterial(context)
-                      ? const Icon(Icons.settings)
-                      : const Icon(CupertinoIcons.gear_alt),
-                  label: S.of(context).settings,
-                ),
-              ],
-              currentIndex: _pageIndex.value,
-              itemChanged: (index) {
-                if (index != _pageIndex.value) {
-                  // Dispatch [SubpageViewState] events.
-                  for (int i = 0; i < _subpage.length; i++) {
-                    if (index != i) {
-                      _subpage[i]
-                          .onViewStateChanged(SubpageViewState.INVISIBLE);
-                    }
-                  }
-                  _subpage[index].onViewStateChanged(SubpageViewState.VISIBLE);
-                  _pageIndex.value = index;
-                } else {
-                  _subpage[index].onDoubleTapOnTab();
-                }
-              },
+        // 2021-5-19 @w568w:
+        // Override the builder to prevent the repeatedly built states on iOS.
+        // I don't know why it works...
+        cupertinoTabChildBuilder: (_, index) => _subpage[index],
+        bottomNavBar: PlatformNavBarM3(
+          items: [
+            // Don't show Dashboard in visitor mode
+            if (StateProvider.personInfo.value?.group != UserGroup.VISITOR)
+              BottomNavigationBarItem(
+                icon: PlatformX.isMaterial(context)
+                    ? const Icon(Icons.dashboard)
+                    : const Icon(CupertinoIcons.square_stack_3d_up_fill),
+                label: S.of(context).dashboard,
+              ),
+            if (!SettingsController.getInstance().hideHole)
+              BottomNavigationBarItem(
+                icon: PlatformX.isMaterial(context)
+                    ? const Icon(Icons.forum)
+                    : const Icon(CupertinoIcons.text_bubble),
+                label: S.of(context).forum,
+              ),
+            BottomNavigationBarItem(
+              icon: PlatformX.isMaterial(context)
+                  ? const Icon(Icons.egg_alt)
+                  : const Icon(CupertinoIcons.book),
+              label: S.of(context).curriculum,
             ),
-          ),
-        ));
+            // Don't show Timetable in visitor mode
+            if (StateProvider.personInfo.value?.group != UserGroup.VISITOR)
+              BottomNavigationBarItem(
+                icon: PlatformX.isMaterial(context)
+                    ? const Icon(Icons.calendar_today)
+                    : const Icon(CupertinoIcons.calendar),
+                label: S.of(context).timetable,
+              ),
+            BottomNavigationBarItem(
+              icon: PlatformX.isMaterial(context)
+                  ? const Icon(Icons.settings)
+                  : const Icon(CupertinoIcons.gear_alt),
+              label: S.of(context).settings,
+            ),
+          ],
+          currentIndex: _pageIndex.value,
+          itemChanged: (index) {
+            if (index != _pageIndex.value) {
+              // Dispatch [SubpageViewState] events.
+              for (int i = 0; i < _subpage.length; i++) {
+                if (index != i) {
+                  _subpage[i].onViewStateChanged(SubpageViewState.INVISIBLE);
+                }
+              }
+              _subpage[index].onViewStateChanged(SubpageViewState.VISIBLE);
+              _pageIndex.value = index;
+            } else {
+              _subpage[index].onDoubleTapOnTab();
+            }
+          },
+        ),
+      ),
+    ));
   }
 
   @override
@@ -816,7 +816,7 @@ class HomePageState extends State<HomePage> with WidgetsBindingObserver {
       userAgent = AnnouncementRepository.getInstance().getUserAgent();
     } catch (_) {}
     if (userAgent != null) {
-      SettingsProvider.getInstance().customUserAgent =
+      SettingsController.getInstance().customUserAgent =
           StateProvider.onlineUserAgent = userAgent;
     }
   }
@@ -827,12 +827,12 @@ class HomePageState extends State<HomePage> with WidgetsBindingObserver {
       startDateData = AnnouncementRepository.getInstance().getStartDates();
     } catch (_) {}
     if (startDateData != null) {
-      SettingsProvider.getInstance().semesterStartDates = startDateData;
+      SettingsController.getInstance().semesterStartDates = startDateData;
     }
   }
 
   Future<void> _loadCelebration() async {
-    SettingsProvider.getInstance().celebrationWords =
+    SettingsController.getInstance().celebrationWords =
         AnnouncementRepository.getInstance().getCelebrations();
   }
 }

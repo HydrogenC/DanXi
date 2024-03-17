@@ -49,7 +49,7 @@ class DashboardReorderPageState extends State<DashboardReorderPage> {
 
   @override
   Widget build(BuildContext context) {
-    sequence = SettingsProvider.getInstance().dashboardWidgetsSequence;
+    sequence = SettingsController.getInstance().dashboardWidgetsSequence;
 
     // remove invalid cards
     Map<String, String> widgetName = Constant.getFeatureName(context);
@@ -82,7 +82,7 @@ class DashboardReorderPageState extends State<DashboardReorderPage> {
                       onTap: () {
                         sequence!.add(DashboardCard(
                             Constant.FEATURE_NEW_CARD, null, null, true));
-                        SettingsProvider.getInstance()
+                        SettingsController.getInstance()
                             .dashboardWidgetsSequence = sequence;
                         refreshSelf();
                       },
@@ -100,7 +100,7 @@ class DashboardReorderPageState extends State<DashboardReorderPage> {
                           DashboardCard(
                               Constant.FEATURE_DIVIDER, null, null, true),
                         );
-                        SettingsProvider.getInstance()
+                        SettingsController.getInstance()
                             .dashboardWidgetsSequence = sequence;
                         refreshSelf();
                       },
@@ -131,9 +131,9 @@ class DashboardReorderPageState extends State<DashboardReorderPage> {
                       leading: Icon(PlatformIcons(context).removeCircled),
                       title: Text(S.of(context).reset_layout),
                       onTap: () async {
-                        await SettingsProvider.getInstance()
+                        await SettingsController.getInstance()
                             .preferences!
-                            .remove(SettingsProvider.KEY_DASHBOARD_WIDGETS);
+                            .remove(SettingsController.KEY_DASHBOARD_WIDGETS);
                         refreshSelf();
                       },
                     ),
@@ -148,7 +148,7 @@ class DashboardReorderPageState extends State<DashboardReorderPage> {
               DashboardCard tmp = sequence![oldIndex];
               sequence!.removeAt(oldIndex);
               sequence!.insert(newIndex, tmp);
-              SettingsProvider.getInstance().dashboardWidgetsSequence =
+              SettingsController.getInstance().dashboardWidgetsSequence =
                   sequence;
               refreshSelf();
             },
@@ -179,7 +179,7 @@ class DashboardReorderPageState extends State<DashboardReorderPage> {
           ),
           onDismissed: (direction) {
             sequence!.removeAt(index);
-            SettingsProvider.getInstance().dashboardWidgetsSequence = sequence;
+            SettingsController.getInstance().dashboardWidgetsSequence = sequence;
             refreshSelf();
           },
         ));
@@ -204,7 +204,7 @@ class DashboardReorderPageState extends State<DashboardReorderPage> {
                 controlAffinity: ListTileControlAffinity.leading,
                 onChanged: (bool? value) {
                   sequence![index].enabled = value;
-                  SettingsProvider.getInstance().dashboardWidgetsSequence =
+                  SettingsController.getInstance().dashboardWidgetsSequence =
                       sequence;
                   refreshSelf();
                 },
@@ -213,7 +213,7 @@ class DashboardReorderPageState extends State<DashboardReorderPage> {
             ),
             onDismissed: (direction) {
               sequence!.removeAt(index);
-              SettingsProvider.getInstance().dashboardWidgetsSequence =
+              SettingsController.getInstance().dashboardWidgetsSequence =
                   sequence;
               refreshSelf();
             },
@@ -236,7 +236,7 @@ class DashboardReorderPageState extends State<DashboardReorderPage> {
                 secondary: const Icon(Icons.drag_handle_rounded),
                 onChanged: (bool? value) {
                   sequence![index].enabled = value;
-                  SettingsProvider.getInstance().dashboardWidgetsSequence =
+                  SettingsController.getInstance().dashboardWidgetsSequence =
                       sequence;
                   refreshSelf();
                 },

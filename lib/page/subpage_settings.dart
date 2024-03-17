@@ -56,6 +56,8 @@ import 'package:flutter_email_sender/flutter_email_sender.dart';
 import 'package:flutter_layout_grid/flutter_layout_grid.dart';
 import 'package:flutter_platform_widgets/flutter_platform_widgets.dart';
 import 'package:flutter_progress_dialog/flutter_progress_dialog.dart';
+import 'package:get/get.dart';
+import 'package:get/get_state_manager/get_state_manager.dart';
 import 'package:in_app_review/in_app_review.dart';
 import 'package:nil/nil.dart';
 import 'package:path_provider/path_provider.dart';
@@ -248,7 +250,7 @@ class SettingsSubpageState extends PlatformSubpageState<SettingsSubpage> {
       await OpenTreeHoleRepository.getInstance().logout();
     } finally {
       progressDialog.dismiss(showAnim: false);
-      SettingsProvider.getInstance()
+      SettingsController.getInstance()
           .preferences
           ?.clear()
           .then((value) => FlutterApp.restartApp(context));
@@ -258,7 +260,7 @@ class SettingsSubpageState extends PlatformSubpageState<SettingsSubpage> {
   List<Widget> _buildCampusAreaList(BuildContext menuContext) {
     List<Widget> list = [];
     onTapListener(Campus campus) {
-      SettingsProvider.getInstance().campus = campus;
+      SettingsController.getInstance().campus = campus;
       dashboardPageKey.currentState?.triggerRebuildFeatures();
       refreshSelf();
     }
@@ -276,7 +278,7 @@ class SettingsSubpageState extends PlatformSubpageState<SettingsSubpage> {
   List<Widget> _buildFoldBehaviorList(BuildContext menuContext) {
     List<Widget> list = [];
     void onTapListener(FoldBehavior value) {
-      context.read<FDUHoleProvider>().userInfo!.config!.show_folded =
+      FDUHoleController.to.userInfo!.config!.show_folded =
           value.internalString();
       updateOTUserProfile(context);
       treeholePageKey.currentState?.setState(() {});
@@ -298,7 +300,7 @@ class SettingsSubpageState extends PlatformSubpageState<SettingsSubpage> {
   List<Widget> _buildLanguageList(BuildContext menuContext) {
     List<Widget> list = [];
     onTapListener(Language language) {
-      SettingsProvider.getInstance().language = language;
+      SettingsController.getInstance().language = language;
     }
 
     for (var value in Constant.LANGUAGE_VALUES) {
@@ -314,7 +316,7 @@ class SettingsSubpageState extends PlatformSubpageState<SettingsSubpage> {
   List<Widget> _buildThemeList(BuildContext menuContext) {
     List<Widget> list = [];
     onTapListener(ThemeType theme) {
-      SettingsProvider.getInstance().themeType = theme;
+      SettingsController.getInstance().themeType = theme;
     }
 
     for (var value in ThemeType.values) {
@@ -344,167 +346,179 @@ class SettingsSubpageState extends PlatformSubpageState<SettingsSubpage> {
                 physics: const AlwaysScrollableScrollPhysics(),
                 children: [
                   //Account Selection
-                  Card(
-                    child: Column(children: [
-                      ListTile(
-                        title: Text(S.of(context).account),
-                        leading: PlatformX.isMaterial(context)
-                            ? const Icon(Icons.account_circle)
-                            : const Icon(CupertinoIcons.person_circle),
-                        subtitle: Text(
-                            "${StateProvider.personInfo.value!.name} (${StateProvider.personInfo.value!.id})"),
-                        onTap: () {
-                          showPlatformDialog(
-                            context: context,
-                            barrierDismissible: false,
-                            builder: (BuildContext context) =>
-                                PlatformAlertDialog(
-                              title: Text(
-                                  S.of(context).logout_question_prompt_title),
-                              content:
-                                  Text(S.of(context).logout_question_prompt),
-                              actions: [
-                                PlatformDialogAction(
-                                  child: Text(S.of(context).cancel),
-                                  onPressed: () => Navigator.of(context).pop(),
-                                ),
-                                PlatformDialogAction(
-                                    child: Text(
-                                      S.of(context).i_see,
-                                      style: TextStyle(
-                                          color: Theme.of(context)
-                                              .colorScheme
-                                              .error),
-                                    ),
-                                    onPressed: () {
-                                      Navigator.of(context).pop();
-                                      _deleteAllDataAndExit();
-                                    })
-                              ],
-                            ),
-                          );
-                        },
-                      ),
-
-                      // Campus
-                      ListTile(
-                        title: Text(S.of(context).default_campus),
-                        leading: PlatformX.isMaterial(context)
-                            ? const Icon(Icons.location_on)
-                            : const Icon(CupertinoIcons.location_fill),
-                        subtitle: Text(SettingsProvider.getInstance()
-                            .campus
-                            .displayTitle(context)),
-                        onTap: () => showPlatformModalSheet(
-                            context: context,
-                            builder: (BuildContext context) =>
-                                PlatformContextMenu(
-                                    actions: _buildCampusAreaList(context),
-                                    cancelButton: CupertinoActionSheetAction(
-                                        child: Text(S.of(context).cancel),
-                                        onPressed: () =>
-                                            Navigator.of(context).pop()))),
-                      ),
-                    ]),
-                  ),
-                  // Accessibility
-                  Card(
-                    child: Column(
-                      children: [
-                        ListTile(
-                          title: Text(S.of(context).default_language),
-                          leading: PlatformX.isMaterial(context)
-                              ? const Icon(Icons.language)
-                              : const Icon(CupertinoIcons.globe),
-                          subtitle: Text(SettingsProvider.getInstance()
-                              .language
-                              .displayTitle(context)),
-                          onTap: () => showPlatformModalSheet(
-                              context: context,
-                              builder: (BuildContext context) =>
-                                  PlatformContextMenu(
-                                      actions: _buildLanguageList(context),
-                                      cancelButton: CupertinoActionSheetAction(
-                                          child: Text(S.of(context).cancel),
-                                          onPressed: () =>
-                                              Navigator.of(context).pop()))),
-                        ),
-                        Selector<SettingsProvider, bool>(
-                          selector: (_, model) =>
-                              model.useAccessibilityColoring,
-                          builder: (_, bool value, __) =>
-                              SwitchListTile.adaptive(
-                            title: Text(S.of(context).accessibility_coloring),
-                            subtitle: Text(
-                                S.of(context).high_contrast_color_description),
-                            secondary:
-                                const Icon(Icons.accessibility_new_rounded),
-                            value: value,
-                            onChanged: (bool value) {
-                              SettingsProvider.getInstance()
-                                  .useAccessibilityColoring = value;
-                              treeholePageKey.currentState?.setState(() {});
-                            },
-                          ),
-                        ),
-                        if (PlatformX.isMaterial(context))
+                  Obx(() => Card(
+                        child: Column(children: [
                           ListTile(
-                            title: Text(S.of(context).theme_color),
-                            subtitle:
-                                Text(S.of(context).theme_color_description),
-                            leading: const Icon(Icons.color_lens),
-                            onTap: () async {
-                              MaterialColor? result =
-                                  await showPlatformDialog<MaterialColor?>(
+                            title: Text(S.of(context).account),
+                            leading: PlatformX.isMaterial(context)
+                                ? const Icon(Icons.account_circle)
+                                : const Icon(CupertinoIcons.person_circle),
+                            subtitle: Text(
+                                "${StateProvider.personInfo.value!.name} (${StateProvider.personInfo.value!.id})"),
+                            onTap: () {
+                              showPlatformDialog(
                                 context: context,
-                                builder: (_) => SwatchPickerDialog(
-                                  initialSelectedColor: context
-                                      .read<SettingsProvider>()
-                                      .primarySwatch_V2,
+                                barrierDismissible: false,
+                                builder: (BuildContext context) =>
+                                    PlatformAlertDialog(
+                                  title: Text(S
+                                      .of(context)
+                                      .logout_question_prompt_title),
+                                  content: Text(
+                                      S.of(context).logout_question_prompt),
+                                  actions: [
+                                    PlatformDialogAction(
+                                      child: Text(S.of(context).cancel),
+                                      onPressed: () =>
+                                          Navigator.of(context).pop(),
+                                    ),
+                                    PlatformDialogAction(
+                                        child: Text(
+                                          S.of(context).i_see,
+                                          style: TextStyle(
+                                              color: Theme.of(context)
+                                                  .colorScheme
+                                                  .error),
+                                        ),
+                                        onPressed: () {
+                                          Navigator.of(context).pop();
+                                          _deleteAllDataAndExit();
+                                        })
+                                  ],
                                 ),
                               );
-                              if (result != null && mounted) {
-                                context
-                                    .read<SettingsProvider>()
-                                    .setPrimarySwatch_V2(result.value);
-                                FlutterApp.restartApp(context);
-                              }
                             },
                           ),
-                        ListTile(
-                          title: Text(S.of(context).theme),
-                          subtitle: Text(context
-                                  .select<SettingsProvider, ThemeType>(
-                                      (s) => s.themeType)
-                                  .displayTitle(context) ??
-                              "null"),
-                          leading: const Icon(Icons.brightness_4),
-                          onTap: () => showPlatformModalSheet(
-                              context: context,
-                              builder: (BuildContext context) =>
-                                  PlatformContextMenu(
-                                      actions: _buildThemeList(context),
-                                      cancelButton: CupertinoActionSheetAction(
-                                          child: Text(S.of(context).cancel),
-                                          onPressed: () =>
-                                              Navigator.of(context).pop()))),
-                        ),
-                        if (context.select<SettingsProvider, bool>(
-                            (value) => value.hiddenNotifications.isNotEmpty))
+
+                          // Campus
                           ListTile(
-                            title:
-                                Text(S.of(context).show_hidden_notifications),
-                            subtitle: Text(S
-                                .of(context)
-                                .show_hidden_notifications_description),
-                            leading: const Icon(Icons.notifications_off),
-                            onTap: () => context
-                                .read<SettingsProvider>()
-                                .hiddenNotifications = [],
+                            title: Text(S.of(context).default_campus),
+                            leading: PlatformX.isMaterial(context)
+                                ? const Icon(Icons.location_on)
+                                : const Icon(CupertinoIcons.location_fill),
+                            subtitle: Text(SettingsController.getInstance()
+                                .campus
+                                .displayTitle(context)),
+                            onTap: () => showPlatformModalSheet(
+                                context: context,
+                                builder: (BuildContext context) =>
+                                    PlatformContextMenu(
+                                        actions: _buildCampusAreaList(context),
+                                        cancelButton:
+                                            CupertinoActionSheetAction(
+                                                child:
+                                                    Text(S.of(context).cancel),
+                                                onPressed: () =>
+                                                    Navigator.of(context)
+                                                        .pop()))),
                           ),
-                      ],
-                    ),
-                  ),
+                        ]),
+                      )),
+
+                  // Accessibility
+                  GetBuilder<SettingsController>(
+                      id: 'global',
+                      builder: (controller) => Card(
+                            child: Column(
+                              children: [
+                                ListTile(
+                                  title: Text(S.of(context).default_language),
+                                  leading: PlatformX.isMaterial(context)
+                                      ? const Icon(Icons.language)
+                                      : const Icon(CupertinoIcons.globe),
+                                  subtitle: Text(
+                                      controller
+                                          .language
+                                          .displayTitle(context)),
+                                  onTap: () => showPlatformModalSheet(
+                                      context: context,
+                                      builder: (BuildContext context) =>
+                                          PlatformContextMenu(
+                                              actions:
+                                                  _buildLanguageList(context),
+                                              cancelButton:
+                                                  CupertinoActionSheetAction(
+                                                      child: Text(
+                                                          S.of(context).cancel),
+                                                      onPressed: () =>
+                                                          Navigator.of(context)
+                                                              .pop()))),
+                                ),
+                                SwitchListTile.adaptive(
+                                  title: Text(
+                                      S.of(context).accessibility_coloring),
+                                  subtitle: Text(S
+                                      .of(context)
+                                      .high_contrast_color_description),
+                                  secondary: const Icon(
+                                      Icons.accessibility_new_rounded),
+                                  value: controller.useAccessibilityColoring,
+                                  onChanged: (bool value) {
+                                    SettingsController.to
+                                        .useAccessibilityColoring = value;
+                                    treeholePageKey.currentState
+                                        ?.setState(() {});
+                                  },
+                                ),
+                                if (PlatformX.isMaterial(context))
+                                  ListTile(
+                                    title: Text(S.of(context).theme_color),
+                                    subtitle: Text(
+                                        S.of(context).theme_color_description),
+                                    leading: const Icon(Icons.color_lens),
+                                    onTap: () async {
+                                      MaterialColor? result =
+                                          await showPlatformDialog<
+                                              MaterialColor?>(
+                                        context: context,
+                                        builder: (_) => SwatchPickerDialog(
+                                          initialSelectedColor:
+                                              SettingsController
+                                                  .to.primarySwatchV2,
+                                        ),
+                                      );
+                                      if (result != null && mounted) {
+                                        SettingsController.to.primarySwatchV2 =
+                                            result.value;
+                                        // FlutterApp.restartApp(context);
+                                      }
+                                    },
+                                  ),
+                                ListTile(
+                                  title: Text(S.of(context).theme),
+                                  subtitle: Text(controller.themeType
+                                          .displayTitle(context) ??
+                                      "null"),
+                                  leading: const Icon(Icons.brightness_4),
+                                  onTap: () => showPlatformModalSheet(
+                                      context: context,
+                                      builder: (BuildContext context) =>
+                                          PlatformContextMenu(
+                                              actions: _buildThemeList(context),
+                                              cancelButton:
+                                                  CupertinoActionSheetAction(
+                                                      child: Text(
+                                                          S.of(context).cancel),
+                                                      onPressed: () =>
+                                                          Navigator.of(context)
+                                                              .pop()))),
+                                ),
+                                if (controller.hiddenNotifications.isNotEmpty)
+                                  ListTile(
+                                    title: Text(S
+                                        .of(context)
+                                        .show_hidden_notifications),
+                                    subtitle: Text(S
+                                        .of(context)
+                                        .show_hidden_notifications_description),
+                                    leading:
+                                        const Icon(Icons.notifications_off),
+                                    onTap: () => SettingsController
+                                        .to.hiddenNotifications = [],
+                                  ),
+                              ],
+                            ),
+                          )),
                   if (PlatformX.isWindows)
                     Card(
                       child: SwitchListTile.adaptive(
@@ -530,7 +544,7 @@ class SettingsSubpageState extends PlatformSubpageState<SettingsSubpage> {
 
                   // FDUHOLE
                   _buildFDUHoleSettingsCard(context),
-                  if (SettingsProvider.getInstance().debugMode)
+                  if (SettingsController.getInstance().debugMode)
                     //Theme Selection
                     Card(
                       child: ListTile(
@@ -548,7 +562,7 @@ class SettingsSubpageState extends PlatformSubpageState<SettingsSubpage> {
                                 .changeToMaterialPlatform(),
                       ),
                     ),
-                  if (SettingsProvider.getInstance().debugMode)
+                  if (SettingsController.getInstance().debugMode)
                     Card(
                         child: ListTile(
                             title: const Text("Fancy Watermark"),
@@ -556,20 +570,20 @@ class SettingsSubpageState extends PlatformSubpageState<SettingsSubpage> {
                             subtitle: const Text(
                                 "[WARNING: DEBUG FEATURE] Visible watermark"),
                             onTap: () {
-                              if (SettingsProvider.getInstance()
+                              if (SettingsController.getInstance()
                                   .visibleWatermarkMode) {
-                                SettingsProvider.getInstance()
+                                SettingsController.getInstance()
                                     .lightWatermarkColor = 0x2a000000;
-                                SettingsProvider.getInstance()
+                                SettingsController.getInstance()
                                     .darkWatermarkColor = 0x2a000000;
-                                SettingsProvider.getInstance()
+                                SettingsController.getInstance()
                                     .visibleWatermarkMode = false;
                               } else {
-                                SettingsProvider.getInstance()
+                                SettingsController.getInstance()
                                     .lightWatermarkColor = 0x04000000;
-                                SettingsProvider.getInstance()
+                                SettingsController.getInstance()
                                     .darkWatermarkColor = 0x0a000000;
-                                SettingsProvider.getInstance()
+                                SettingsController.getInstance()
                                     .visibleWatermarkMode = true;
                               }
                               FlutterApp.restartApp(context);
@@ -607,17 +621,19 @@ class SettingsSubpageState extends PlatformSubpageState<SettingsSubpage> {
 
   Widget _buildFDUHoleSettingsCard(BuildContext context) {
     return Card(
-      child: Column(
+        child: GetBuilder<FDUHoleController>(
+      builder: (controller) => Column(
         children: [
           ExpansionTileX(
             leading: Icon(PlatformIcons(context).accountCircle),
             title: Text(S.of(context).forum),
-            subtitle: Text(context.read<FDUHoleProvider>().isUserInitialized
-                ? S.of(context).fduhole_user_id(
-                    context.read<FDUHoleProvider>().userInfo!.user_id ?? "null")
+            subtitle: Text(controller.isUserInitialized
+                ? S
+                    .of(context)
+                    .fduhole_user_id(controller.userInfo!.user_id ?? "null")
                 : S.of(context).not_logged_in),
             children: [
-              if (context.read<FDUHoleProvider>().isUserInitialized) ...[
+              if (controller.isUserInitialized) ...[
                 FutureWidget<OTUser?>(
                   future: OpenTreeHoleRepository.getInstance().getUserProfile(),
                   successBuilder:
@@ -661,41 +677,43 @@ class SettingsSubpageState extends PlatformSubpageState<SettingsSubpage> {
                   ),
                 ),
                 OTNotificationSettingsTile(onSettingsUpdate: refreshSelf),
-                Selector<SettingsProvider, bool>(
-                    builder: (_, bool value, __) => SwitchListTile.adaptive(
+                GetBuilder<SettingsController>(
+                    id: 'hole',
+                    builder: (controller) => SwitchListTile.adaptive(
                           title: Text(S.of(context).fduhole_show_banner),
                           secondary: const Icon(Icons.campaign),
                           subtitle: Text(
                               S.of(context).fduhole_show_banner_description),
-                          value: value,
+                          value: controller.isBannerEnabled,
                           onChanged: (bool value) =>
-                              SettingsProvider.getInstance().isBannerEnabled =
+                              SettingsController.getInstance().isBannerEnabled =
                                   value,
-                        ),
-                    selector: (_, model) => model.isBannerEnabled),
-                Selector<SettingsProvider, bool>(
-                    builder: (_, bool value, __) => SwitchListTile.adaptive(
+                        )),
+                GetBuilder<SettingsController>(
+                    id: 'hole',
+                    builder: (controller) => SwitchListTile.adaptive(
                           title: Text(S.of(context).fduhole_clean_mode),
                           secondary: const Icon(Icons.ac_unit),
                           subtitle: Text(
                               S.of(context).fduhole_clean_mode_description),
-                          value: value,
+                          value: controller.cleanMode,
                           onChanged: (bool value) {
                             if (value) {
                               _showCleanModeGuideDialog();
                             }
-                            SettingsProvider.getInstance().cleanMode = value;
+                            SettingsController.getInstance().cleanMode = value;
                           },
-                        ),
-                    selector: (_, model) => model.cleanMode),
-                if (SettingsProvider.getInstance().tagSuggestionAvailable) ...[
-                  Selector<SettingsProvider, bool>(
-                      builder: (_, bool value, __) => SwitchListTile.adaptive(
+                        )),
+                if (SettingsController.getInstance()
+                    .tagSuggestionAvailable) ...[
+                  GetBuilder<SettingsController>(
+                      id: 'hole',
+                      builder: (controller) => SwitchListTile.adaptive(
                           title: Text(S.of(context).recommended_tags),
                           secondary: const Icon(Icons.recommend),
                           subtitle:
                               Text(S.of(context).recommended_tags_availibity),
-                          value: value,
+                          value: controller.isTagSuggestionEnabled,
                           onChanged: (bool value) async {
                             if (!value ||
                                 await Noticing.showConfirmationDialog(
@@ -706,11 +724,10 @@ class SettingsSubpageState extends PlatformSubpageState<SettingsSubpage> {
                                         title:
                                             S.of(context).recommended_tags) ==
                                     true) {
-                              SettingsProvider.getInstance()
+                              SettingsController.getInstance()
                                   .isTagSuggestionEnabled = value;
                             }
-                          }),
-                      selector: (_, model) => model.isTagSuggestionEnabled),
+                          })),
                 ] else
                   ListTile(
                     title: Text(S.of(context).recommended_tags),
@@ -734,7 +751,7 @@ class SettingsSubpageState extends PlatformSubpageState<SettingsSubpage> {
                   title: Text(S.of(context).background_image),
                   subtitle: Text(S.of(context).background_image_description),
                   onTap: () async {
-                    if (SettingsProvider.getInstance().backgroundImagePath ==
+                    if (SettingsController.getInstance().backgroundImagePath ==
                         null) {
                       final ImagePickerProxy picker =
                           ImagePickerProxy.createPicker();
@@ -745,7 +762,7 @@ class SettingsSubpageState extends PlatformSubpageState<SettingsSubpage> {
                       final File file = File(image);
                       final imagePath = '$path/background';
                       await file.copy(imagePath);
-                      SettingsProvider.getInstance().backgroundImagePath =
+                      SettingsController.getInstance().backgroundImagePath =
                           imagePath;
                       treeholePageKey.currentState?.setState(() {});
                     } else {
@@ -753,13 +770,13 @@ class SettingsSubpageState extends PlatformSubpageState<SettingsSubpage> {
                               S.of(context).background_image_already_set,
                               title: S.of(context).already_set) ==
                           true) {
-                        final file = File(SettingsProvider.getInstance()
+                        final file = File(SettingsController.getInstance()
                             .backgroundImagePath!);
                         if (await file.exists()) {
                           await file.delete();
                           await FileImage(file).evict();
                         }
-                        SettingsProvider.getInstance().backgroundImagePath =
+                        SettingsController.getInstance().backgroundImagePath =
                             null;
                         treeholePageKey.currentState?.setState(() {});
                       }
@@ -779,16 +796,16 @@ class SettingsSubpageState extends PlatformSubpageState<SettingsSubpage> {
                     });
                   },
                 ),
-                if (SettingsProvider.getInstance().debugMode)
+                if (SettingsController.getInstance().debugMode)
                   ListTile(
                       leading: const Icon(Icons.speed),
                       title: const Text("Light Rendering"),
                       subtitle: const Text(
                           "[WARNING: DEBUG FEATURE] Disable Markdown Rendering"),
                       onTap: () {
-                        SettingsProvider.getInstance()
+                        SettingsController.getInstance()
                                 .isMarkdownRenderingEnabled =
-                            !SettingsProvider.getInstance()
+                            !SettingsController.getInstance()
                                 .isMarkdownRenderingEnabled;
                       }),
                 ListTile(
@@ -813,7 +830,7 @@ class SettingsSubpageState extends PlatformSubpageState<SettingsSubpage> {
               ],
               ListTile(
                 leading: nil,
-                title: context.read<FDUHoleProvider>().isUserInitialized
+                title: controller.isUserInitialized
                     ? Text(
                         S.of(context).logout,
                         style: TextStyle(
@@ -825,8 +842,8 @@ class SettingsSubpageState extends PlatformSubpageState<SettingsSubpage> {
                             color: Theme.of(context).colorScheme.secondary),
                       ),
                 onTap: () async {
-                  if (!context.read<FDUHoleProvider>().isUserInitialized) {
-                    if (SettingsProvider.getInstance().fduholeToken == null) {
+                  if (!controller.isUserInitialized) {
+                    if (SettingsController.getInstance().fduholeToken == null) {
                       Noticing.showNotice(
                           context, S.of(context).login_from_treehole_page,
                           title: S.of(context).login);
@@ -861,7 +878,7 @@ class SettingsSubpageState extends PlatformSubpageState<SettingsSubpage> {
           ),
         ],
       ),
-    );
+    ));
   }
 
   static const String CLEAN_MODE_EXAMPLE = '`差不多得了😅，自己不会去看看吗😇`';
@@ -1143,19 +1160,21 @@ class _OTNotificationSettingsWidgetState
     extends State<OTNotificationSettingsWidget> {
   @override
   Widget build(BuildContext context) {
-    return Column(
-      mainAxisSize: MainAxisSize.min,
-      children: _buildNotificationSettingsList(context),
-    );
+    return GetBuilder<FDUHoleController>(
+        builder: (controller) => Column(
+              mainAxisSize: MainAxisSize.min,
+              children:
+                  _buildNotificationSettingsList(context, controller.userInfo),
+            ));
   }
 
-  List<Widget> _buildNotificationSettingsList(BuildContext context) {
+  List<Widget> _buildNotificationSettingsList(
+      BuildContext context, OTUser? userInfo) {
     List<Widget> list = [];
-    if (context.read<FDUHoleProvider>().userInfo?.config?.notify == null) {
+    if (userInfo?.config?.notify == null) {
       return [Text(S.of(context).fatal_error)];
     }
-    getNotifyListNonNull() =>
-        context.read<FDUHoleProvider>().userInfo!.config!.notify!;
+    getNotifyListNonNull() => userInfo!.config!.notify!;
     for (var value in OTNotificationTypes.values) {
       list.add(SwitchListTile.adaptive(
           title: Text(value.displayTitle(context) ?? "null"),
@@ -1216,7 +1235,7 @@ class OTNotificationSettingsTile extends StatelessWidget {
           successBuilder:
               (BuildContext context, AsyncSnapshot<bool> permissionSnapshot) {
             if (permissionSnapshot.data == true) {
-              if (!context.read<FDUHoleProvider>().isUserInitialized) {
+              if (!FDUHoleController.to.isUserInitialized) {
                 return ListTile(
                   title: Text(S.of(context).notification_settings),
                   leading: icon,

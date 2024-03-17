@@ -37,7 +37,7 @@ class CurriculumBoardRepository extends BaseRepositoryWithDio {
         "$_BASE_AUTH_URL/refresh",
         () => provider.token,
         (token) => provider.token =
-            SettingsProvider.getInstance().fduholeToken = token));
+            SettingsController.getInstance().fduholeToken = token));
     dio.interceptors.add(
         UserAgentInterceptor(userAgent: Uri.encodeComponent(Constant.version)));
 
@@ -50,7 +50,7 @@ class CurriculumBoardRepository extends BaseRepositoryWithDio {
   }
 
   /// Short name for the provider singleton
-  FDUHoleProvider get provider => FDUHoleProvider.getInstance();
+  FDUHoleController get provider => FDUHoleController.getInstance();
 
   Map<String, String> get _tokenHeader {
     if (provider.token == null || !provider.token!.isValid) {

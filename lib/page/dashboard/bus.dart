@@ -136,7 +136,7 @@ class BusPageState extends State<BusPage> {
     _startSliding = _startSelectItem!.index;
     _onStartLocationChanged(_startSelectItem);
 
-    _endSelectItem = SettingsProvider.getInstance().campus;
+    _endSelectItem = SettingsController.getInstance().campus;
     _endSliding = _endSelectItem!.index;
     _onEndLocationChanged(_endSelectItem);
   }

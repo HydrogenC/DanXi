@@ -39,13 +39,16 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_platform_widgets/flutter_platform_widgets.dart';
 import 'package:flutter_progress_dialog/flutter_progress_dialog.dart';
+import 'package:get/get.dart';
 import 'package:lazy_load_indexed_stack/lazy_load_indexed_stack.dart';
 
 /// A list page showing the reports for administrators.
 class BBSReportDetail extends StatefulWidget {
-  final Map<String, dynamic>? arguments;
+  late final Map<String, dynamic>? arguments;
 
-  const BBSReportDetail({super.key, this.arguments});
+  BBSReportDetail({super.key}){
+    arguments = Get.arguments;
+  }
 
   @override
   BBSReportDetailState createState() => BBSReportDetailState();

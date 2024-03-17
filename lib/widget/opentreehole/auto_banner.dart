@@ -147,7 +147,7 @@ class AutoBannerState extends State<AutoBanner> {
 
   @override
   Widget build(BuildContext context) {
-    return Selector<SettingsProvider, bool>(
+    return Selector<SettingsController, bool>(
         builder: (BuildContext context, bool bannerEnabled, Widget? child) {
           if (!bannerEnabled) {
             return Container();

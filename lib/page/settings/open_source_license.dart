@@ -24,13 +24,16 @@ import 'package:dan_xi/widget/libraries/platform_app_bar_ex.dart';
 import 'package:dan_xi/widget/libraries/with_scrollbar.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_platform_widgets/flutter_platform_widgets.dart';
+import 'package:get/get.dart';
 
 /// A list page showing open source projects used by the application.
 class OpenSourceLicenseList extends StatefulWidget {
   /// 'items': A list of [LicenseItem] to display on the page
-  final Map<String, dynamic>? arguments;
+  late final Map<String, dynamic>? arguments;
 
-  const OpenSourceLicenseList({super.key, this.arguments});
+  OpenSourceLicenseList({super.key}){
+    arguments = Get.arguments;
+  }
 
   @override
   OpenSourceListState createState() => OpenSourceListState();
@@ -51,9 +54,9 @@ class OpenSourceListState extends State<OpenSourceLicenseList> {
           title: GestureDetector(
         onLongPress: () async {
           if (debugModeEnableStatus++ > 2) {
-            SettingsProvider.getInstance().debugMode =
-                !SettingsProvider.getInstance().debugMode;
-            if (SettingsProvider.getInstance().debugMode) {
+            SettingsController.getInstance().debugMode =
+                !SettingsController.getInstance().debugMode;
+            if (SettingsController.getInstance().debugMode) {
               // Enable debug mode
               Noticing.showNotice(context,
                   "Debug mode enabled. Welcome, developer.\nRefresh for changes to take effect.");

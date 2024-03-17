@@ -18,6 +18,7 @@
 import 'package:dan_xi/model/person.dart';
 import 'package:dan_xi/provider/fduhole_provider.dart';
 import 'package:flutter/cupertino.dart';
+import 'package:get/get.dart';
 import 'package:provider/provider.dart';
 
 /// Manage global states of the app.
@@ -28,7 +29,7 @@ import 'package:provider/provider.dart';
 /// Do NOT break the decoupling of the project!
 class StateProvider {
   /// The user's basic information.
-  static final ValueNotifier<PersonInfo?> personInfo = ValueNotifier(null);
+  static final personInfo = Rxn<PersonInfo>();
   static bool needScreenshotWarning = false;
   static bool isForeground = true;
   static bool showingScreenshotWarning = false;
@@ -36,7 +37,7 @@ class StateProvider {
   static String? onlineUserAgent;
 
   static void initialize(BuildContext context) {
-    FDUHoleProvider provider = context.read<FDUHoleProvider>();
+    FDUHoleController provider = FDUHoleController.to;
     provider.currentDivision = null;
     personInfo.value = null;
     isForeground = true;

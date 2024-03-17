@@ -34,6 +34,7 @@ import 'package:dan_xi/widget/libraries/with_scrollbar.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_platform_widgets/flutter_platform_widgets.dart';
+import 'package:get/get.dart';
 import 'package:ical/serializer.dart';
 import 'package:nil/nil.dart';
 import 'package:open_file/open_file.dart';
@@ -45,12 +46,14 @@ import 'package:share_plus/share_plus.dart';
 /// If successful, it will fetch exams in this term. In case that there is no exam, it shows the score of this term.
 /// If failed, it will try to fetch the list of score in all terms from DataCenter.
 class ExamList extends StatefulWidget {
-  final Map<String, dynamic>? arguments;
+  late final Map<String, dynamic>? arguments;
 
   @override
   ExamListState createState() => ExamListState();
 
-  const ExamList({super.key, this.arguments});
+  ExamList({super.key}){
+    arguments = Get.arguments;
+  }
 }
 
 class ExamListState extends State<ExamList> {

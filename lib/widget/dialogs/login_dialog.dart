@@ -36,6 +36,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_platform_widgets/flutter_platform_widgets.dart';
 import 'package:flutter_progress_dialog/flutter_progress_dialog.dart';
+import 'package:get/get.dart';
 
 const kCompatibleUserGroup = [
   UserGroup.FUDAN_UNDERGRADUATE_STUDENT,
@@ -48,14 +49,14 @@ const kCompatibleUserGroup = [
 /// Also contains the logic to process logging in.
 class LoginDialog extends StatefulWidget {
   final XSharedPreferences? sharedPreferences;
-  final ValueNotifier<PersonInfo?> personInfo;
+  final Rxn<PersonInfo> personInfo;
   final bool dismissible;
   static bool _isShown = false;
 
   static bool get dialogShown => _isShown;
 
   static showLoginDialog(BuildContext context, XSharedPreferences? preferences,
-      ValueNotifier<PersonInfo?> personInfo, bool dismissible) async {
+      Rxn<PersonInfo> personInfo, bool dismissible) async {
     if (_isShown) return;
     _isShown = true;
     await showPlatformDialog(
@@ -99,7 +100,7 @@ class LoginDialogState extends State<LoginDialog> {
         await newInfo.saveToSharedPreferences(widget.sharedPreferences!);
         widget.personInfo.value = newInfo;
         progressDialog.dismiss(showAnim: false);
-        Navigator.of(context).pop();
+        Get.back();
         break;
       case UserGroup.FUDAN_POSTGRADUATE_STUDENT:
       case UserGroup.FUDAN_UNDERGRADUATE_STUDENT:
@@ -111,7 +112,7 @@ class LoginDialogState extends State<LoginDialog> {
           await newInfo.saveToSharedPreferences(widget.sharedPreferences!);
           widget.personInfo.value = newInfo;
           progressDialog.dismiss(showAnim: false);
-          Navigator.of(context).pop();
+          Get.back();
         } catch (e) {
           if (e is DioError) {
             progressDialog.dismiss(showAnim: false);
@@ -126,7 +127,7 @@ class LoginDialogState extends State<LoginDialog> {
             await newInfo.saveToSharedPreferences(widget.sharedPreferences!);
             widget.personInfo.value = newInfo;
             progressDialog.dismiss(showAnim: false);
-            Navigator.of(context).pop();
+            Get.back();
           } catch (error) {
             progressDialog.dismiss(showAnim: false);
             rethrow;
