@@ -233,14 +233,14 @@ class DanxiApp extends StatelessWidget {
     //
     // You may find [PlatformX] in `lib/util/platform_universal.dart` useful to
     // get the current platform.
-    Widget mainApp = PlatformProvider(
+    Widget mainApp = HookConsumer(
       // Uncomment this line below to force the app to use Cupertino Widgets.
       // initialPlatform: TargetPlatform.iOS,
 
-      builder: (BuildContext context) {
-        MaterialColor primarySwatch =
-            context.select<SettingsProvider, MaterialColor>((value) =>
-                generateMaterialColor(color: Color(value.primarySwatch_V2)));
+      builder: (context, ref, child) {
+        MaterialColor primarySwatch = generateMaterialColor(
+            color: Color(ref.watch(settingsProvider
+                .select((value) => value.get(SettingsProvider.primarySwatch)))));
         // [DynamicThemeController] enables the app to change between dark/light
         // theme without restart on iOS.
         return DynamicThemeController(
@@ -248,60 +248,58 @@ class DanxiApp extends StatelessWidget {
               PlatformX.isCupertino(context), primarySwatch),
           darkTheme:
               Constant.darkTheme(PlatformX.isCupertino(context), primarySwatch),
-          child: Material(
-            child: PlatformApp(
-              // We have just defined this scroll behavior class above
-              // to enable scrolling with mouse & stylus.
-              scrollBehavior: TouchMouseScrollBehavior(),
-              debugShowCheckedModeBanner: false,
-              // Fix cupertino UI text color issue by override text color
-              cupertino: (context, __) => CupertinoAppData(
-                  theme: CupertinoThemeData(
-                      brightness: context
-                          .select<SettingsProvider, ThemeType>(
-                              (s) => s.themeType)
-                          .getBrightness(),
-                      scaffoldBackgroundColor:
-                          PlatformX.getTheme(context, primarySwatch)
-                              .scaffoldBackgroundColor,
-                      textTheme: CupertinoTextThemeData(
-                          textStyle: TextStyle(
-                              color: PlatformX.getTheme(context, primarySwatch)
-                                  .textTheme
-                                  .bodyLarge!
-                                  .color)))),
-              material: (context, __) => MaterialAppData(
-                  theme: PlatformX.getTheme(context, primarySwatch)),
-              // Configure i18n delegates.
-              localizationsDelegates: const [
-                // [S] is a generated class that contains all the strings in the
-                // app for l10n.
-                S.delegate,
-                GlobalMaterialLocalizations.delegate,
-                GlobalWidgetsLocalizations.delegate,
-                GlobalCupertinoLocalizations.delegate
-              ],
-              locale: LanguageManager.toLocale(
-                  context.watch<SettingsProvider>().language),
-              supportedLocales: S.delegate.supportedLocales,
-              onUnknownRoute: (settings) => throw AssertionError(
-                  "ERROR: onUnknownRoute() has been called inside the root navigator.\nDevelopers are not supposed to push on this Navigator. There should be something wrong in the code."),
-              home: ThemedSystemOverlay(
-                child: PlatformMasterDetailApp(
-                  // Configure the page route behaviour of the whole app.
-                  onGenerateRoute: (settings) {
-                    final Function? pageContentBuilder =
-                        DanxiApp.routes[settings.name!];
-                    if (pageContentBuilder != null) {
-                      return platformPageRoute(
-                          context: context,
-                          builder: (context) => pageContentBuilder(context,
-                              arguments: settings.arguments));
-                    }
-                    return null;
-                  },
-                  navigatorKey: navigatorKey,
-                ),
+          child: PlatformApp(
+            // We have just defined this scroll behavior class above
+            // to enable scrolling with mouse & stylus.
+            scrollBehavior: TouchMouseScrollBehavior(),
+            debugShowCheckedModeBanner: false,
+            // Fix cupertino UI text color issue by override text color
+            cupertino: (context, __) => CupertinoAppData(
+                theme: CupertinoThemeData(
+                    brightness: ref
+                        .watch(settingsProvider
+                            .select((value) => value.get(SettingsProvider.themeType)))
+                        .getBrightness(),
+                    scaffoldBackgroundColor:
+                        PlatformX.getTheme(context, primarySwatch)
+                            .scaffoldBackgroundColor,
+                    textTheme: CupertinoTextThemeData(
+                        textStyle: TextStyle(
+                            color: PlatformX.getTheme(context, primarySwatch)
+                                .textTheme
+                                .bodyLarge!
+                                .color)))),
+            material: (context, __) => MaterialAppData(
+                theme: PlatformX.getTheme(context, primarySwatch)),
+            // Configure i18n delegates.
+            localizationsDelegates: const [
+              // [S] is a generated class that contains all the strings in the
+              // app for l10n.
+              S.delegate,
+              GlobalMaterialLocalizations.delegate,
+              GlobalWidgetsLocalizations.delegate,
+              GlobalCupertinoLocalizations.delegate
+            ],
+            locale: LanguageManager.toLocale(ref.watch(
+                settingsProvider.select((value) => value.get(SettingsProvider.language)))),
+            supportedLocales: S.delegate.supportedLocales,
+            onUnknownRoute: (settings) => throw AssertionError(
+                "ERROR: onUnknownRoute() has been called inside the root navigator.\nDevelopers are not supposed to push on this Navigator. There should be something wrong in the code."),
+            home: ThemedSystemOverlay(
+              child: PlatformMasterDetailApp(
+                // Configure the page route behaviour of the whole app.
+                onGenerateRoute: (settings) {
+                  final Function? pageContentBuilder =
+                      DanxiApp.routes[settings.name!];
+                  if (pageContentBuilder != null) {
+                    return platformPageRoute(
+                        context: context,
+                        builder: (context) => pageContentBuilder(context,
+                            arguments: settings.arguments));
+                  }
+                  return null;
+                },
+                navigatorKey: navigatorKey,
               ),
             ),
           ),

@@ -23,13 +23,11 @@ import 'package:dan_xi/provider/settings_provider.dart';
 import 'package:dan_xi/provider/state_provider.dart' as sp;
 import 'package:dan_xi/repository/fdu/bus_repository.dart';
 import 'package:dan_xi/widget/libraries/error_page_widget.dart';
-import 'package:dan_xi/widget/libraries/platform_app_bar_ex.dart';
 import 'package:dan_xi/widget/libraries/top_controller.dart';
 import 'package:dan_xi/widget/libraries/with_scrollbar.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_hooks/flutter_hooks.dart';
-import 'package:flutter_platform_widgets/flutter_platform_widgets.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:intl/intl.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
@@ -84,12 +82,12 @@ class BusPage extends HookConsumerWidget {
 
     final startSelectItem = useState<Campus?>(Campus.HANDAN_CAMPUS);
     final endSelectItem =
-        useState<Campus?>(SettingsProvider.getInstance().campus);
-    final displayStartSelectItem = startSelectItem.value ?? Campus.NONE;
-    final displayEndSelectItem = endSelectItem.value ?? Campus.NONE;
+        useState<Campus?>(ref.read(settingsProvider).get(SettingsProvider.campus));
+    final displayStartSelectItem = startSelectItem.value ?? Campus.UNSELECTED;
+    final displayEndSelectItem = endSelectItem.value ?? Campus.UNSELECTED;
 
-    return PlatformScaffold(
-        appBar: PlatformAppBarX(
+    return Scaffold(
+        appBar: AppBar(
             title: TopController(
                 controller: scrollController,
                 child: Text(S.of(context).bus_query))),
@@ -112,47 +110,24 @@ class BusPage extends HookConsumerWidget {
                 mainAxisAlignment: MainAxisAlignment.spaceAround,
                 children: [
                   Text(S.of(context).bus_start),
-                  PlatformWidget(
-                    material: (context, __) => DropdownButton<Campus>(
+                  DropdownButton<Campus>(
                       items: _getItems(context),
                       value: startSelectItem.value,
                       hint: Text(displayStartSelectItem.displayTitle(context)),
                       onChanged: (Campus? e) => startSelectItem.value = e,
                     ),
-                    cupertino: (context, __) => Padding(
-                      padding: const EdgeInsets.only(top: 8, bottom: 4),
-                      child: CupertinoSlidingSegmentedControl<int>(
-                        onValueChanged: (int? value) =>
-                            startSelectItem.value = Campus.values[value!],
-                        groupValue: displayStartSelectItem.index,
-                        children: _getCupertinoItems(context),
-                      ),
-                    ),
-                  ),
                 ],
               ),
               Row(
                 mainAxisAlignment: MainAxisAlignment.spaceAround,
                 children: [
                   Text(S.of(context).bus_dest),
-                  PlatformWidget(
-                    material: (_, __) => DropdownButton<Campus>(
+                  DropdownButton<Campus>(
                       items: _getItems(context),
                       value: endSelectItem.value,
                       hint: Text(displayEndSelectItem.displayTitle(context)),
                       onChanged: (Campus? e) => endSelectItem.value = e,
                     ),
-                    cupertino: (_, __) => Padding(
-                      padding: const EdgeInsets.only(top: 8, bottom: 4),
-                      child: CupertinoSlidingSegmentedControl<int>(
-                        onValueChanged: (int? value) {
-                          endSelectItem.value = Campus.values[value!];
-                        },
-                        groupValue: displayEndSelectItem.index,
-                        children: _getCupertinoItems(context),
-                      ),
-                    ),
-                  ),
                 ],
               ),
               Expanded(
@@ -171,12 +146,6 @@ class BusPage extends HookConsumerWidget {
         return DropdownMenuItem(value: e, child: Text(e.displayTitle(context)));
       }).toList(growable: false);
 
-  Map<int, Text> _getCupertinoItems(BuildContext context) =>
-      Constant.CAMPUS_VALUES
-          .map((e) => Text(e.displayTitle(context)))
-          .toList(growable: false)
-          .asMap();
-
   Widget _buildFutureWidget(
       AutoDisposeFutureProvider<List<BusScheduleItem>> provider,
       Campus startSelectItem,
@@ -192,7 +161,7 @@ class BusPage extends HookConsumerWidget {
       AsyncError(:final error, :final stackTrace) =>
         ErrorPageWidget.buildWidget(context, error,
             stackTrace: stackTrace, onTap: () => ref.refresh(provider)),
-      _ => Center(child: PlatformCircularProgressIndicator()),
+      _ => const Center(child: CircularProgressIndicator()),
     };
   }
 
@@ -233,7 +202,7 @@ class BusPage extends HookConsumerWidget {
     List<Widget> widgets = [
       Card(
         child: ListTile(
-          leading: Icon(PlatformIcons(context).info),
+          leading: const Icon(Icons.info),
           title: Text(showAll.value
               ? S.of(context).school_bus_showing_all
               : S.of(context).school_bus_not_showing_all(

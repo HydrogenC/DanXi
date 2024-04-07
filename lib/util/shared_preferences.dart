@@ -115,7 +115,8 @@ class XSharedPreferences {
   Future<bool> setBool(String dataKey, bool? dataValue) =>
       _preferences.setBoolean(dataKey, dataValue);
 
-  Future<bool> setStringList(String dataKey, List<String>? dataValue) =>
+  // T must be primitive
+  Future<bool> setList<T>(String dataKey, List<T>? dataValue) =>
       setString(dataKey, jsonEncode(dataValue));
 
   String? getString(String key) => _preferences.getString(key);
@@ -126,9 +127,10 @@ class XSharedPreferences {
 
   bool? getBool(String key) => _preferences.getBoolean(key);
 
-  List<String>? getStringList(String key) {
+  // T must be primitive
+  List<T>? getList<T>(String key) {
     String? value = getString(key);
-    return value == null ? null : jsonDecode(value).cast<String>();
+    return value == null ? null : jsonDecode(value).cast<T>();
   }
 
   bool containsKey(String key) {

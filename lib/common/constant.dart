@@ -565,7 +565,7 @@ class Constant {
   static const WeekDays = ["周一", "周二", "周三", "周四", "周五", "周六", "周日"];
 }
 
-enum Language { SIMPLE_CHINESE, ENGLISH, JAPANESE, NONE }
+enum Language { SIMPLE_CHINESE, ENGLISH, JAPANESE }
 
 /// A list of Fudan campus.
 enum Campus {
@@ -573,14 +573,18 @@ enum Campus {
   FENGLIN_CAMPUS,
   JIANGWAN_CAMPUS,
   ZHANGJIANG_CAMPUS,
-  NONE
+  UNSELECTED
 }
 
-extension CampusEx on Campus? {
-  static const _CAMPUS_NAME = ["邯郸", "枫林", "江湾", "张江"];
+extension CampusEx on Campus {
+  static const _CAMPUS_NAME = ["邯郸", "枫林", "江湾", "张江", "未选择"];
+
+  String toChineseName(){
+    return _CAMPUS_NAME[index];
+  }
 
   /// Find the corresponding [Campus] from its Chinese name in [_CAMPUS_NAME].
-  static Campus fromChineseName(String? name) {
+  static Campus? fromChineseName(String? name) {
     if (name != null) {
       for (int i = 0; i < _CAMPUS_NAME.length; i++) {
         if (name.contains(_CAMPUS_NAME[i])) {
@@ -588,11 +592,11 @@ extension CampusEx on Campus? {
         }
       }
     }
-    return Campus.NONE;
+    return null;
   }
 
   /// Get the teaching buildings of this campus.
-  List<String>? getTeachingBuildings() {
+  List<String> getTeachingBuildings() {
     switch (this) {
       case Campus.HANDAN_CAMPUS:
         return ['HGX', 'H2', 'H3', 'H4', 'H5', 'H6'];
@@ -602,10 +606,8 @@ extension CampusEx on Campus? {
         return ['JA', 'JB'];
       case Campus.ZHANGJIANG_CAMPUS:
         return ['Z2'];
-      case Campus.NONE:
-      case null:
-      default:
-        return ['?'];
+      case Campus.UNSELECTED:
+        return [];
     }
   }
 
@@ -621,25 +623,27 @@ extension CampusEx on Campus? {
       case Campus.ZHANGJIANG_CAMPUS:
         return S.of(context).zhangjiang_campus;
       // Select area when it's none
-      case Campus.NONE:
+      case Campus.UNSELECTED:
         return S.of(context).choose_area;
-      case null:
-        return "?";
     }
   }
 }
 
-extension LanguageEx on Language? {
+extension LanguageEx on Language {
   static const _LANGUAGE = ["简体中文", "English", "日本語"];
 
+  String toChineseName(){
+    return _LANGUAGE[index];
+  }
+
   /// Find the corresponding [Language] from its Chinese name in [_LANGUAGE].
-  static Language fromChineseName(String name) {
+  static Language? fromChineseName(String name) {
     for (int i = 0; i < _LANGUAGE.length; i++) {
       if (name.contains(_LANGUAGE[i])) {
         return Constant.LANGUAGE_VALUES[i];
       }
     }
-    return Language.NONE;
+    return null;
   }
 
   /// Get the i18n name of this language for display.
@@ -651,10 +655,6 @@ extension LanguageEx on Language? {
         return S.of(context!).english_languae;
       case Language.JAPANESE:
         return S.of(context!).japanese_languae;
-      case Language.NONE:
-        return "?";
-      case null:
-        return "?";
     }
   }
 }

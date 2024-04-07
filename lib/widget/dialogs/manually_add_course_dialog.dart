@@ -6,27 +6,16 @@ import 'package:dan_xi/util/platform_universal.dart';
 import 'package:dan_xi/widget/dialogs/manually_add_course_dialog_sub.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter_platform_widgets/flutter_platform_widgets.dart';
+import 'package:flutter_hooks/flutter_hooks.dart';
+import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:provider/provider.dart';
+import 'package:riverpod_annotation/riverpod_annotation.dart';
 
-class ManuallyAddCourseDialog extends StatefulWidget {
+
+class ManuallyAddCourseDialog extends HookConsumerWidget {
   const ManuallyAddCourseDialog(this.courseAvailableList, {super.key});
 
   final List<int> courseAvailableList;
-
-  @override
-  State<ManuallyAddCourseDialog> createState() =>
-      _ManuallyAddCourseDialogState();
-}
-
-class _ManuallyAddCourseDialogState extends State<ManuallyAddCourseDialog> {
-  Course newCourse = Course()..times = [];
-  List<Widget> selectedCourseTimeInfo = [];
-
-  TextEditingController courseNameController = TextEditingController();
-  TextEditingController courseIdController = TextEditingController();
-  TextEditingController courseRoomIdController = TextEditingController();
-  TextEditingController courseTeacherNameController = TextEditingController();
 
   Course newCourseListGenerator(
       TextEditingController courseNameController,
@@ -46,20 +35,6 @@ class _ManuallyAddCourseDialogState extends State<ManuallyAddCourseDialog> {
     return newCourse;
   }
 
-  void onButtonPressed() async {
-    List<CourseTime>? courseTime = await showPlatformDialog<List<CourseTime>>(
-        context: context, builder: (context) => const AddCourseDialogSub());
-    if (courseTime != null) {
-      newCourse.times!.addAll(courseTime);
-      selectedCourseTimeInfo.add(
-        ListTile(
-            title: Text(
-                "${Constant.WeekDays[courseTime[0].weekDay]} ${slotsOfADayGenerator(courseTime)}")),
-      );
-      setState(() {});
-    }
-  }
-
   String slotsOfADayGenerator(List<CourseTime> courseTime) {
     List<String>? outCome = [];
     for (var element in courseTime) {
@@ -69,17 +44,26 @@ class _ManuallyAddCourseDialogState extends State<ManuallyAddCourseDialog> {
   }
 
   @override
-  void dispose() {
-    courseNameController.dispose();
-    courseIdController.dispose();
-    courseRoomIdController.dispose();
-    courseTeacherNameController.dispose();
-    super.dispose();
+  Widget build(BuildContext context, WidgetRef ref) {
+    final courseNameController = useTextEditingController();
+    final courseIdController = useTextEditingController();
+    final courseRoomIdController = useTextEditingController();
+    final courseTeacherNameController = useTextEditingController();
+
+    void onButtonPressed() async {
+    List<CourseTime>? courseTime = await showDialog<List<CourseTime>>(
+        context: context, builder: (context) => const AddCourseDialogSub());
+    if (courseTime != null) {
+      newCourse.times!.addAll(courseTime);
+      selectedCourseTimeInfo.add(
+        ListTile(
+            title: Text(
+                "${Constant.WeekDays[courseTime[0].weekDay]} ${slotsOfADayGenerator(courseTime)}")),
+      );
+    }
   }
 
-  @override
-  Widget build(BuildContext context) {
-    return PlatformAlertDialog(
+    return AlertDialog(
       title: Text(S.of(context).add_courses),
       content: SingleChildScrollView(
         child: Column(
@@ -89,9 +73,7 @@ class _ManuallyAddCourseDialogState extends State<ManuallyAddCourseDialog> {
               keyboardType: TextInputType.text,
               decoration: InputDecoration(
                   labelText: S.of(context).course_name,
-                  icon: PlatformX.isMaterial(context)
-                      ? const Icon(Icons.book)
-                      : const Icon(CupertinoIcons.book)),
+                  icon: const Icon(Icons.book)),
               autofocus: false,
             ),
             if (!PlatformX.isMaterial(context)) const SizedBox(height: 2),
@@ -147,21 +129,18 @@ class _ManuallyAddCourseDialogState extends State<ManuallyAddCourseDialog> {
                 children: List.generate(18, (index) => index + 1)
                     .map((e) => GestureDetector(
                           onTap: () {
-                            if (widget.courseAvailableList.contains(e)) {
-                              setState(
-                                  () => widget.courseAvailableList.remove(e));
+                            if (courseAvailableList.contains(e)) {
+                              courseAvailableList.remove(e);
                             } else {
-                              setState(() => widget.courseAvailableList.add(e));
+                              courseAvailableList.add(e);
                             }
                           },
                           child: CircleAvatar(
                             key: ObjectKey(e),
                             radius: 15.0,
-                            backgroundColor: Color(context
-                                .read<SettingsProvider>()
-                                .primarySwatch_V2),
+                            backgroundColor: Color(ref.read(settingsProvider).get(SettingsProvider.primarySwatch)),
                             foregroundColor: Colors.white,
-                            child: widget.courseAvailableList.contains(e)
+                            child: courseAvailableList.contains(e)
                                 ? Icon(PlatformX.isMaterial(context)
                                     ? Icons.done
                                     : CupertinoIcons.checkmark_alt)
@@ -203,13 +182,13 @@ class _ManuallyAddCourseDialogState extends State<ManuallyAddCourseDialog> {
         ),
       ),
       actions: [
-        PlatformDialogAction(
+        TextButton(
             child: Text(S.of(context).cancel),
             onPressed: () => {Navigator.pop(context)}),
-        PlatformDialogAction(
+        TextButton(
             child: Text(S.of(context).ok),
             onPressed: () {
-              if (widget.courseAvailableList.isEmpty ||
+              if (courseAvailableList.isEmpty ||
                   newCourse.times!.isEmpty) {
                 showPlatformDialog(
                     context: context,
@@ -231,11 +210,21 @@ class _ManuallyAddCourseDialogState extends State<ManuallyAddCourseDialog> {
                         courseIdController,
                         courseRoomIdController,
                         courseTeacherNameController,
-                        widget.courseAvailableList,
+                        courseAvailableList,
                         newCourse));
               }
             }),
       ],
     );
   }
+}
+
+class _ManuallyAddCourseDialogState extends State<ManuallyAddCourseDialog> {
+  Course newCourse = Course()..times = [];
+  List<Widget> selectedCourseTimeInfo = [];
+
+  TextEditingController courseNameController = TextEditingController();
+  TextEditingController courseIdController = TextEditingController();
+  TextEditingController courseRoomIdController = TextEditingController();
+  TextEditingController courseTeacherNameController = TextEditingController();
 }

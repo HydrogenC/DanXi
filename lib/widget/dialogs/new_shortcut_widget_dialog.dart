@@ -24,11 +24,9 @@ import 'package:dan_xi/util/public_extension_methods.dart';
 import 'package:dio/dio.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter_platform_widgets/flutter_platform_widgets.dart';
 
 /// Allows user to create custom dashboard widgets that link to certain websites.
 class NewShortcutDialog extends StatefulWidget {
-
   const NewShortcutDialog({super.key});
 
   @override
@@ -49,11 +47,17 @@ class NewShortcutDialogState extends State<NewShortcutDialog> {
     // Validate URL
     try {
       await Dio().head(_linkTextFieldController.text);
-      SettingsProvider.getInstance().dashboardWidgetsSequence =
-          SettingsProvider.getInstance().dashboardWidgetsSequence.followedBy([
-            DashboardCard(Constant.FEATURE_CUSTOM_CARD,
-            _nameTextFieldController.text, _linkTextFieldController.text, true)
-      ]).toList();
+      SettingsProvider.getInstance().set(
+          SettingsProvider.dashboardWidgetsSequence,
+          SettingsProvider.getInstance()
+              .get(SettingsProvider.dashboardWidgetsSequence)
+              .followedBy([
+            DashboardCard(
+                Constant.FEATURE_CUSTOM_CARD,
+                _nameTextFieldController.text,
+                _linkTextFieldController.text,
+                true)
+          ]).toList());
       if (mounted) Navigator.of(context).pop();
     } catch (e) {
       _errorText = S.of(context).unable_to_access_url;
@@ -63,7 +67,7 @@ class NewShortcutDialogState extends State<NewShortcutDialog> {
 
   @override
   Widget build(BuildContext context) {
-    return PlatformAlertDialog(
+    return AlertDialog(
       title: Text(S.of(context).new_shortcut_card),
       content: Column(
         mainAxisSize: MainAxisSize.min,
@@ -82,18 +86,14 @@ class NewShortcutDialogState extends State<NewShortcutDialog> {
                 child: Text(S.of(context).name),
               ),
             ),
-          PlatformTextField(
+          TextField(
             controller: _nameTextFieldController,
-            material: (_, __) => MaterialTextFieldData(
-              decoration: InputDecoration(
-                labelText: S.of(context).name,
-                icon: PlatformX.isMaterial(context)
-                    ? const Icon(Icons.lock_outline)
-                    : const Icon(CupertinoIcons.lock_circle),
-              ),
+            decoration: InputDecoration(
+              labelText: S.of(context).name,
+              icon: PlatformX.isMaterial(context)
+                  ? const Icon(Icons.lock_outline)
+                  : const Icon(CupertinoIcons.lock_circle),
             ),
-            cupertino: (_, __) =>
-                CupertinoTextFieldData(placeholder: S.of(context).school_bus),
           ),
           if (PlatformX.isCupertino(context))
             Align(
@@ -103,32 +103,26 @@ class NewShortcutDialogState extends State<NewShortcutDialog> {
                 child: Text(S.of(context).link),
               ),
             ),
-          PlatformTextField(
-              controller: _linkTextFieldController,
-              keyboardType: TextInputType.url,
-              autocorrect: false,
-              material: (_, __) => MaterialTextFieldData(
-                    decoration: InputDecoration(
-                      labelText: S.of(context).link,
-                      icon: PlatformX.isMaterial(context)
-                          ? const Icon(Icons.lock_outline)
-                          : const Icon(CupertinoIcons.lock_circle),
-                    ),
-                  ),
-              cupertino: (_, __) => CupertinoTextFieldData(
-                  placeholder: S.of(context).project_url),
-              onSubmitted: (_) {
-                _save();
-              }),
+          TextField(
+            controller: _linkTextFieldController,
+            keyboardType: TextInputType.url,
+            autocorrect: false,
+            decoration: InputDecoration(
+              labelText: S.of(context).link,
+              icon: PlatformX.isMaterial(context)
+                  ? const Icon(Icons.lock_outline)
+                  : const Icon(CupertinoIcons.lock_circle),
+            ),
+          ),
         ],
       ),
       actions: [
-        PlatformDialogAction(
+        TextButton(
             child: Text(S.of(context).cancel),
             onPressed: () {
               Navigator.of(context).pop();
             }),
-        PlatformDialogAction(
+        TextButton(
           child: Text(S.of(context).add),
           onPressed: () {
             _save();

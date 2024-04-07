@@ -1,25 +1,14 @@
-import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter_platform_widgets/flutter_platform_widgets.dart';
-import 'package:provider/provider.dart';
+import 'package:flutter_hooks/flutter_hooks.dart';
+import 'package:hooks_riverpod/hooks_riverpod.dart';
 
 import '../../common/constant.dart';
 import '../../generated/l10n.dart';
 import '../../model/time_table.dart';
 import '../../provider/settings_provider.dart';
-import '../../util/platform_universal.dart';
 
-class AddCourseDialogSub extends StatefulWidget {
+class AddCourseDialogSub extends HookConsumerWidget {
   const AddCourseDialogSub({super.key});
-
-  @override
-  State<AddCourseDialogSub> createState() => _AddCourseDialogSubState();
-}
-
-class _AddCourseDialogSubState extends State<AddCourseDialogSub> {
-  int selectedWeekDay = 0;
-  List<bool> selectedSlots = List.generate(15, (index) => false);
-  List<CourseTime>? newCourseTime;
 
   List<CourseTime>? newCourseTimeGenerator(
       int selectedWeekDay, List<bool> selectedSlots) {
@@ -35,8 +24,17 @@ class _AddCourseDialogSubState extends State<AddCourseDialogSub> {
   }
 
   @override
-  Widget build(BuildContext context) {
-    return PlatformAlertDialog(
+  Widget build(BuildContext context, WidgetRef ref) {
+    final selectedWeekDay = useState(0);
+
+    // To make the list notifiable
+    final slotsModified = useState(false);
+    List<bool> selectedSlots = List.generate(15, (index) => false);
+
+    final bgColor =
+        ref.read(settingsProvider).get(SettingsProvider.primarySwatch);
+
+    return AlertDialog(
       content: Column(
         children: [
           Wrap(
@@ -45,20 +43,14 @@ class _AddCourseDialogSubState extends State<AddCourseDialogSub> {
               children: List.generate(7, (index) => index)
                   .map((e) => GestureDetector(
                         onTap: () {
-                          setState(() {
-                            selectedWeekDay = e;
-                          });
+                          selectedWeekDay.value = e;
                         },
                         child: CircleAvatar(
                           radius: 24.0,
-                          backgroundColor: Color(context
-                              .read<SettingsProvider>()
-                              .primarySwatch_V2),
+                          backgroundColor: Color(bgColor),
                           foregroundColor: Colors.white,
-                          child: e == selectedWeekDay
-                              ? Icon(PlatformX.isMaterial(context)
-                                  ? Icons.done
-                                  : CupertinoIcons.checkmark_alt)
+                          child: e == selectedWeekDay.value
+                              ? const Icon(Icons.done)
                               : Text(
                                   Constant.WeekDays[e],
                                   style: const TextStyle(
@@ -75,20 +67,15 @@ class _AddCourseDialogSubState extends State<AddCourseDialogSub> {
               children: List.generate(14, (index) => index)
                   .map((e) => GestureDetector(
                         onTap: () {
-                          setState(() {
-                            selectedSlots[e] = !selectedSlots[e];
-                          });
+                          selectedSlots[e] = !selectedSlots[e];
+                          slotsModified.value = !slotsModified.value;
                         },
                         child: CircleAvatar(
                           radius: 24.0,
-                          backgroundColor: Color(context
-                              .read<SettingsProvider>()
-                              .primarySwatch_V2),
+                          backgroundColor: Color(bgColor),
                           foregroundColor: Colors.white,
                           child: selectedSlots[e] == true
-                              ? Icon(PlatformX.isMaterial(context)
-                                  ? Icons.done
-                                  : CupertinoIcons.checkmark_alt)
+                              ? const Icon(Icons.done)
                               : Text(
                                   (e + 1).toString(),
                                   style: const TextStyle(
@@ -101,16 +88,14 @@ class _AddCourseDialogSubState extends State<AddCourseDialogSub> {
         ],
       ),
       actions: [
-        PlatformDialogAction(
+        TextButton(
             child: Text(S.of(context).cancel),
             onPressed: () => Navigator.pop(context)),
-        PlatformDialogAction(
+        TextButton(
             child: Text(S.of(context).add),
             onPressed: () {
-              Navigator.pop(
-                  context,
-                  newCourseTimeGenerator(
-                      selectedWeekDay, selectedSlots));
+              Navigator.pop(context,
+                  newCourseTimeGenerator(selectedWeekDay.value, selectedSlots));
             }),
       ],
     );
