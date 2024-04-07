@@ -1,41 +1,45 @@
 import 'package:dan_xi/provider/settings_provider.dart';
-import 'package:dan_xi/util/shared_preferences.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
-import 'package:riverpod_annotation/riverpod_annotation.dart';
 
-
-abstract class SettingsItem<T> {
+abstract class SettingsItem<T> with ChangeNotifier {
   final String key;
   final T defaultValue;
 
-  const SettingsItem(this.key, this.defaultValue);
+  SettingsItem(this.key, this.defaultValue);
 
   T? get value;
 
   set value(T? val);
 
-  T getValueOrDefault() {
-    return value ?? defaultValue;
-  }
+  ChangeNotifierProvider get provider;
 
-  void removeKey(){
+  T get valueOrDefault => value ?? defaultValue;
+
+  void removeKey() {
     SettingsProvider.getInstance().preferences.remove(key);
+    notifyListeners();
   }
 }
 
 class StringSettingsItem extends SettingsItem<String> {
-  const StringSettingsItem(super.key, super.defaultValue);
-  
+  StringSettingsItem(super.key, super.defaultValue);
+
+  late final ChangeNotifierProvider<StringSettingsItem> _provider =
+      ChangeNotifierProvider((ref) => this);
+
   @override
-  String? get value{
+  ChangeNotifierProvider<StringSettingsItem> get provider => _provider;
+
+  @override
+  String? get value {
     return SettingsProvider.getInstance().preferences.getString(key);
   }
-  
+
   @override
   set value(String? val) {
-    if(val == null){
+    notifyListeners();
+    if (val == null) {
       removeKey();
       return;
     }
@@ -46,16 +50,23 @@ class StringSettingsItem extends SettingsItem<String> {
 
 // T must be Json serializable
 class ListSettingsItem<T> extends SettingsItem<List<T>> {
-  const ListSettingsItem(super.key, super.defaultValue);
+  ListSettingsItem(super.key, super.defaultValue);
+
+  late final ChangeNotifierProvider<ListSettingsItem<T>> _provider =
+      ChangeNotifierProvider((ref) => this);
 
   @override
-  List<T>? get value{
+  ChangeNotifierProvider<ListSettingsItem<T>> get provider => _provider;
+
+  @override
+  List<T>? get value {
     return SettingsProvider.getInstance().preferences.getList<T>(key);
   }
-  
+
   @override
   set value(List<T>? val) {
-    if(val == null){
+    notifyListeners();
+    if (val == null) {
       removeKey();
       return;
     }
@@ -65,16 +76,23 @@ class ListSettingsItem<T> extends SettingsItem<List<T>> {
 }
 
 class IntSettingsItem extends SettingsItem<int> {
-  const IntSettingsItem(super.key, super.defaultValue);
+  IntSettingsItem(super.key, super.defaultValue);
+
+  late final ChangeNotifierProvider<IntSettingsItem> _provider =
+      ChangeNotifierProvider((ref) => this);
 
   @override
-  int? get value{
+  ChangeNotifierProvider<IntSettingsItem> get provider => _provider;
+
+  @override
+  int? get value {
     return SettingsProvider.getInstance().preferences.getInt(key);
   }
-  
+
   @override
   set value(int? val) {
-    if(val == null){
+    notifyListeners();
+    if (val == null) {
       removeKey();
       return;
     }
@@ -84,16 +102,23 @@ class IntSettingsItem extends SettingsItem<int> {
 }
 
 class DoubleSettingsItem extends SettingsItem<double> {
-  const DoubleSettingsItem(super.key, super.defaultValue);
+  DoubleSettingsItem(super.key, super.defaultValue);
+
+  late final ChangeNotifierProvider<DoubleSettingsItem> _provider =
+      ChangeNotifierProvider((ref) => this);
 
   @override
-  double? get value{
+  ChangeNotifierProvider<DoubleSettingsItem> get provider => _provider;
+
+  @override
+  double? get value {
     return SettingsProvider.getInstance().preferences.getDouble(key);
   }
-  
+
   @override
   set value(double? val) {
-    if(val == null){
+    notifyListeners();
+    if (val == null) {
       removeKey();
       return;
     }
@@ -103,16 +128,23 @@ class DoubleSettingsItem extends SettingsItem<double> {
 }
 
 class BoolSettingsItem extends SettingsItem<bool> {
-  const BoolSettingsItem(super.key, super.defaultValue);
+  BoolSettingsItem(super.key, super.defaultValue);
+
+  late final ChangeNotifierProvider<BoolSettingsItem> _provider =
+      ChangeNotifierProvider((ref) => this);
 
   @override
-  bool? get value{
+  ChangeNotifierProvider<BoolSettingsItem> get provider => _provider;
+
+  @override
+  bool? get value {
     return SettingsProvider.getInstance().preferences.getBool(key);
   }
-  
+
   @override
   set value(bool? val) {
-    if(val == null){
+    notifyListeners();
+    if (val == null) {
       removeKey();
       return;
     }
@@ -121,27 +153,34 @@ class BoolSettingsItem extends SettingsItem<bool> {
   }
 }
 
-class SettingsItemDecorator<T, V> extends SettingsItem<V> {
+class DecoratedSettingsItem<T, V> extends SettingsItem<V> {
   final T Function(V) forwardConvertor;
   final V Function(T) backwardConvertor;
   final SettingsItem<T> innerItem;
   final V? overrideDefault;
 
-  SettingsItemDecorator(
+  late final ChangeNotifierProvider<DecoratedSettingsItem<T, V>> _provider =
+      ChangeNotifierProvider((ref) => this);
+
+  @override
+  ChangeNotifierProvider<DecoratedSettingsItem<T, V>> get provider => _provider;
+
+  DecoratedSettingsItem(
       this.innerItem, this.forwardConvertor, this.backwardConvertor,
       {this.overrideDefault})
       : super(innerItem.key,
             overrideDefault ?? backwardConvertor(innerItem.defaultValue));
 
   @override
-  V? get value{
+  V? get value {
     final rawValue = innerItem.value;
     return rawValue == null ? null : backwardConvertor(rawValue);
   }
-  
+
   @override
   set value(V? val) {
-    if(val == null){
+    notifyListeners();
+    if (val == null) {
       innerItem.value = null;
       return;
     }
@@ -150,7 +189,7 @@ class SettingsItemDecorator<T, V> extends SettingsItem<V> {
   }
 
   @override
-  V getValueOrDefault() {
+  V get valueOrDefault {
     final rawValue = innerItem.value;
     return rawValue == null ? defaultValue : backwardConvertor(rawValue);
   }

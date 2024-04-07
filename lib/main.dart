@@ -239,8 +239,7 @@ class DanxiApp extends StatelessWidget {
 
       builder: (context, ref, child) {
         MaterialColor primarySwatch = generateMaterialColor(
-            color: Color(ref.watch(settingsProvider
-                .select((value) => value.get(SettingsProvider.primarySwatch)))));
+            color: Color(ref.watch(SettingsProvider.primarySwatch.provider).value!));
         // [DynamicThemeController] enables the app to change between dark/light
         // theme without restart on iOS.
         return DynamicThemeController(
@@ -257,9 +256,8 @@ class DanxiApp extends StatelessWidget {
             cupertino: (context, __) => CupertinoAppData(
                 theme: CupertinoThemeData(
                     brightness: ref
-                        .watch(settingsProvider
-                            .select((value) => value.get(SettingsProvider.themeType)))
-                        .getBrightness(),
+                        .watch(SettingsProvider.themeType.provider).value
+                        ?.getBrightness(),
                     scaffoldBackgroundColor:
                         PlatformX.getTheme(context, primarySwatch)
                             .scaffoldBackgroundColor,
@@ -281,7 +279,7 @@ class DanxiApp extends StatelessWidget {
               GlobalCupertinoLocalizations.delegate
             ],
             locale: LanguageManager.toLocale(ref.watch(
-                settingsProvider.select((value) => value.get(SettingsProvider.language)))),
+                SettingsProvider.language.provider).valueOrDefault),
             supportedLocales: S.delegate.supportedLocales,
             onUnknownRoute: (settings) => throw AssertionError(
                 "ERROR: onUnknownRoute() has been called inside the root navigator.\nDevelopers are not supposed to push on this Navigator. There should be something wrong in the code."),

@@ -44,20 +44,19 @@ import 'package:hooks_riverpod/hooks_riverpod.dart';
 class SettingsProvider extends ChangeNotifier {
   late XSharedPreferences preferences;
   static final _instance = SettingsProvider._();
-  static const String KEY_PREFERRED_CAMPUS = "campus";
 
   SettingsProvider._();
 
   factory SettingsProvider.getInstance() => _instance;
 
-  static final SettingsItemDecorator<String, Campus> campus = SettingsItemDecorator(
-      const StringSettingsItem("campus", ""),
+  static final campus = DecoratedSettingsItem(
+      StringSettingsItem("campus", ""),
       (cam) => cam.toChineseName(),
       (str) => CampusEx.fromChineseName(str) ?? Campus.HANDAN_CAMPUS,
       overrideDefault: Campus.HANDAN_CAMPUS);
 
-  static final SettingsItemDecorator<String, JWToken?> fduholeToken =
-      SettingsItemDecorator(const StringSettingsItem("fduhole_token", ""),
+  static final fduholeToken =
+      DecoratedSettingsItem<String, JWToken?>(StringSettingsItem("fduhole_token", ""),
           (tok) => jsonEncode(tok), (str) {
     try {
       return JWToken.fromJsonWithVerification(jsonDecode(str));
@@ -66,26 +65,26 @@ class SettingsProvider extends ChangeNotifier {
     }
   }, overrideDefault: null);
 
-  static final SettingsItemDecorator<String, SortOrder> fduholeSortOrder =
-      SettingsItemDecorator(
-          const StringSettingsItem("fduhole_sortorder", ""),
+  static final fduholeSortOrder =
+      DecoratedSettingsItem(
+          StringSettingsItem("fduhole_sortorder", ""),
           (order) => order.internalString(),
           (str) => SortOrderEx.fromInternalString(str) ?? SortOrder.LAST_REPLIED,
           overrideDefault: SortOrder.LAST_REPLIED);
 
-  static const IntSettingsItem lastECBuildingChoiceRepresentation =
+  static final lastECBuildingChoiceRepresentation =
       IntSettingsItem("ec_last_choice", 0);
 
-  static final SettingsItemDecorator<String, FoldBehavior> fduholeFoldBehavior =
-      SettingsItemDecorator(
-          const StringSettingsItem("fduhole_foldbehavior", ""),
+  static final fduholeFoldBehavior =
+      DecoratedSettingsItem(
+          StringSettingsItem("fduhole_foldbehavior", ""),
           (fld) => fld.internalString(),
           (str) => FoldBehaviorEx.fromInternalString(str) ?? FoldBehavior.FOLD,
           overrideDefault: FoldBehavior.FOLD);
 
-  static final SettingsItemDecorator<String, List<DashboardCard>>
-      dashboardWidgetsSequence = SettingsItemDecorator(
-          const StringSettingsItem("dashboard_widgets_json", ""),
+  static final
+      dashboardWidgetsSequence = DecoratedSettingsItem(
+          StringSettingsItem("dashboard_widgets_json", ""),
           (tte) => jsonEncode(tte), (str) {
     var rawCardList = (jsonDecode(str) as List)
         .map((i) => DashboardCard.fromJson(i))
@@ -101,138 +100,124 @@ class SettingsProvider extends ChangeNotifier {
     return rawCardList;
   }, overrideDefault: Constant.defaultDashboardCardList);
 
-  static const StringSettingsItem thisSemesterStartDate =
+  static final thisSemesterStartDate =
       StringSettingsItem("this_semester_start_date", "");
 
-  static final SettingsItemDecorator<String, TimeTableExtra?> semesterStartDates =
-      SettingsItemDecorator(
-          const StringSettingsItem("semester_start_dates", ""),
+  static final semesterStartDates =
+      DecoratedSettingsItem<String, TimeTableExtra?>(
+          StringSettingsItem("semester_start_dates", ""),
           (tte) => jsonEncode(tte),
           (str) => TimeTableExtra.fromJson(jsonDecode(str)),
           overrideDefault: null);
 
-  static const BoolSettingsItem cleanMode =
+  static final cleanMode =
       BoolSettingsItem("clean_mode", false);
 
-  static const BoolSettingsItem debugMode = BoolSettingsItem("DEBUG", false);
+  static final debugMode = BoolSettingsItem("DEBUG", false);
 
-  static const BoolSettingsItem isAdEnabled =
+  static final isAdEnabled =
       BoolSettingsItem("ad_enabled", false);
 
-  static final SettingsItemDecorator<String, List<OTTag>> hiddenTags =
-      SettingsItemDecorator(
-          const StringSettingsItem("hidden_tags", "[]"),
+  static final hiddenTags =
+      DecoratedSettingsItem(
+          StringSettingsItem("hidden_tags", "[]"),
           (lst) => jsonEncode(lst),
           (str) => (json.decode(str) as List)
               .map<OTTag>((e) => OTTag.fromJson(e))
               .toList());
 
-  static const BoolSettingsItem hideHole = BoolSettingsItem("hideHole", false);
+  static final hideHole = BoolSettingsItem("hideHole", false);
 
-  static const BoolSettingsItem useAccessibilityColoring =
+  static final useAccessibilityColoring =
       BoolSettingsItem("accessibility_coloring", false);
 
-  static final SettingsItemDecorator<String, List<Celebration>> celebrationWords =
-      SettingsItemDecorator(
-          const StringSettingsItem("celebration", Constant.SPECIAL_DAYS),
+  static final celebrationWords =
+      DecoratedSettingsItem(
+          StringSettingsItem("celebration", Constant.SPECIAL_DAYS),
           (lst) => jsonEncode(lst),
           (str) => (json.decode(str) as List)
               .map<Celebration>((e) => Celebration.fromJson(e))
               .toList());
 
-  static const StringSettingsItem backgroundImagePath =
+  static final backgroundImagePath =
       StringSettingsItem("background", "");
 
-  static const ListSettingsItem<String> searchHistory =
-      ListSettingsItem("search_history", []);
+  static final searchHistory =
+      ListSettingsItem<String>("search_history", []);
 
-  static const StringSettingsItem timetableSemester =
+  static final timetableSemester =
       StringSettingsItem("timetable_semester", "");
 
-  static const StringSettingsItem customUserAgent =
+  static final customUserAgent =
       StringSettingsItem("custom_user_agent", "");
 
-  static const BoolSettingsItem isBannerEnabled =
+  static final isBannerEnabled =
       BoolSettingsItem("banner_enabled", true);
 
-  static final IntSettingsItem primarySwatch =
+  static final primarySwatch =
       IntSettingsItem("primary_swatch_ex", Colors.blue.value);
 
-  static final SettingsItemDecorator<String, Language> language =
-      SettingsItemDecorator(
-          const StringSettingsItem("language", ""),
+  static final language =
+      DecoratedSettingsItem(
+          StringSettingsItem("language", ""),
           (lan) => lan.toChineseName(),
           (str) => LanguageEx.fromChineseName(str) ?? defaultLanguage,
           overrideDefault: defaultLanguage);
 
-  static final SettingsItemDecorator<String, List<Course>> manualAddedCourses =
-      SettingsItemDecorator(
-          const StringSettingsItem("new_courses", ""),
+  static final manualAddedCourses =
+      DecoratedSettingsItem<String, List<Course>>(
+          StringSettingsItem("new_courses", ""),
           (lst) => jsonEncode(lst),
           (str) => (json.decode(str) as List)
               .map<Course>((i) => Course.fromJson(i))
               .toList(),
           overrideDefault: []);
 
-  static const BoolSettingsItem isTagSuggestionEnabled =
+  static final isTagSuggestionEnabled =
       BoolSettingsItem("tag_suggestions", true);
 
-  static const IntSettingsItem lightWatermarkColor =
+  static final lightWatermarkColor =
       IntSettingsItem("light_watermark_color", 0x03000000);
 
-  static const IntSettingsItem darkWatermarkColor =
+  static final darkWatermarkColor =
       IntSettingsItem("dark_watermark_color", 0x09000000);
 
-  static const BoolSettingsItem visibleWatermarkMode =
+  static final visibleWatermarkMode =
       BoolSettingsItem("visible_watermark", false);
 
-  static const ListSettingsItem<int> hiddenHoles =
-      ListSettingsItem("hidden_holes", []);
+  static final hiddenHoles =
+      ListSettingsItem<int>("hidden_holes", []);
 
-  static const ListSettingsItem<String> hiddenNotifications =
-      ListSettingsItem("hidden_notifications", []);
+  static final hiddenNotifications =
+      ListSettingsItem<String>("hidden_notifications", []);
 
-  static final SettingsItemDecorator<String, ThemeType> themeType =
-      SettingsItemDecorator(
-          const StringSettingsItem("theme_type", ""),
+  static final themeType =
+      DecoratedSettingsItem(
+          StringSettingsItem("theme_type", ""),
           (type) => type.internalString(),
           (str) => ThemeTypeEx.fromInternalString(str) ?? ThemeType.SYSTEM,
           overrideDefault: ThemeType.SYSTEM);
 
-  static const BoolSettingsItem markdownEnabled =
+  static final markdownEnabled =
       BoolSettingsItem("markdown_rendering_enabled", true);
 
-  static const BoolSettingsItem hasVisitedTimetable =
+  static final hasVisitedTimetable =
       BoolSettingsItem("visited_timetable", false);
 
-  static const StringSettingsItem fduholeBaseUrl =
+  static final fduholeBaseUrl =
       StringSettingsItem("fduhole_base_url", Constant.FDUHOLE_BASE_URL);
 
-  static const StringSettingsItem authBaseUrl =
+  static final authBaseUrl =
       StringSettingsItem("auth_base_url", Constant.AUTH_BASE_URL);
 
-  static const StringSettingsItem imageBaseUrl =
+  static final imageBaseUrl =
       StringSettingsItem("image_base_url", Constant.IMAGE_BASE_URL);
 
-  static const StringSettingsItem danxiBaseUrl =
+  static final danxiBaseUrl =
       StringSettingsItem("danke_base_url", Constant.DANKE_BASE_URL);
 
-  // Always use these two functions to access entries
-  T get<T>(SettingsItem<T> item) {
-    return item.getValueOrDefault(preferences);
-  }
-
-  void set<T>(SettingsItem<T> item, T? val) {
-    if (val == null) {
-      preferences.remove(item.key);
-    } else {
-      item.setValue(preferences, val);
-    }
-    notifyListeners();
-  }
-
   FileImage? get backgroundImage {
-    final path = get(backgroundImagePath);
+    final path = "";
     if (path.isEmpty) return null;
     try {
       final File image = File(path);
@@ -268,11 +253,11 @@ class SettingsProvider extends ChangeNotifier {
       preferences!.setString(KEY_LAST_PUSH_TOKEN, value!);*/
 
   void deleteAllFduholeData() {
-    set(fduholeToken, null);
-    set(fduholeFoldBehavior, null);
-    set(fduholeSortOrder, null);
-    set(hideHole, null);
-    set(hiddenHoles, null);
+    fduholeToken.removeKey();
+    fduholeFoldBehavior.removeKey();
+    fduholeSortOrder.removeKey();
+    hideHole.removeKey();
+    hiddenHoles.removeKey();
   }
 
   bool tagSuggestionAvailable = false;

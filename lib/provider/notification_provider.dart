@@ -31,8 +31,7 @@ class NotificationProvider with ChangeNotifier {
         element.runtimeType.toString() == feature.runtimeType.toString())) {
       return;
     }
-    if (SettingsProvider.getInstance()
-        .hiddenNotifications
+    if ((SettingsProvider.hiddenNotifications.value ?? [])
         .contains(feature.runtimeType.toString())) return;
 
     _notifications.add(feature);

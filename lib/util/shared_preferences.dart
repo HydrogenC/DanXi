@@ -84,8 +84,8 @@ class XSharedPreferences {
             await _instance!.setDouble(oldKey, value);
           } else if (value is bool) {
             await _instance!.setBool(oldKey, value);
-          } else if (value is List<String>) {
-            await _instance!.setStringList(oldKey, value);
+          } else if (value is List) {
+            await _instance!.setList(oldKey, value);
           }
           await sharedPreferences.remove(oldKey);
         }
