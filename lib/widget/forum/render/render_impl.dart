@@ -23,10 +23,11 @@ import 'package:dan_xi/widget/forum/auto_bbs_image.dart';
 import 'package:dan_xi/widget/forum/forum_widgets.dart';
 import 'package:dan_xi/widget/forum/render/base_render.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter_markdown/flutter_markdown.dart';
 import 'package:flutter_math_fork/flutter_math.dart';
 import 'package:markdown/markdown.dart' as md;
 import 'package:nil/nil.dart';
+import 'package:markdown_widget/markdown_widget.dart';
+import 'package:win32/win32.dart';
 
 const double kFontSize = 16.0;
 const double kFontLargerSize = 24.0;
@@ -94,6 +95,9 @@ final kMarkdownRenderFactory = (double? defaultFontSize) =>
         bool isPreviewWidget) {
       double imageWidth = ViewportUtils.getMainNavigatorWidth(context) * 0.75;
 
+      return MarkdownWidget(data: content!);
+
+      /*
       return MarkdownBody(
     softLineBreak: true,
     data: content!,
@@ -143,6 +147,7 @@ final kMarkdownRenderFactory = (double? defaultFontSize) =>
           );
         },
       );
+      */
     };
 
 final BaseRender kMarkdownRender = kMarkdownRenderFactory(kFontSize);
