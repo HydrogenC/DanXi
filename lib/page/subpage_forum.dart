@@ -105,7 +105,7 @@ String renderText(String content, String imagePlaceholder,
   String originalContent = content;
   if (!isHtml(content)) {
     content = md.markdownToHtml(content, inlineSyntaxes: [
-      LatexSyntax(),
+      LatexInlineSyntax(),
       LatexMultiLineSyntax(),
       if (removeMentions) MentionSyntax()
     ]);

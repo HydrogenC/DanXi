@@ -60,26 +60,22 @@ const double kFontLargerSize = 24.0;
   );
 };*/
 
-MarkdownStyleSheet _getMarkdownStyleSheetFromPlatform(BuildContext context) =>
-    MarkdownStyleSheet.fromTheme(Theme.of(context));
+MarkdownConfig _createMarkdownConfig(BuildContext context,
+    {ImgBuilder? imageBuilder, void Function(String)? onTapLink}) {
+  final baseConfig = Theme.of(context).brightness == Brightness.dark
+      ? MarkdownConfig.darkConfig
+      : MarkdownConfig.defaultConfig;
+  return baseConfig.copy(configs: [
+    LinkConfig(onTap: onTapLink, style: const TextStyle(color: Color(0xff0969da), decoration: null)),
+    if (imageBuilder != null) ImgConfig(builder: imageBuilder),
+  ]);
+}
 
 // Override the font size and background of blockquote
-MarkdownStyleSheet _markdownStyleOverride(
-    MarkdownStyleSheet sheet, double? fontSize) {
-  return sheet.copyWith(
-    p: sheet.p?.copyWith(fontSize: fontSize),
-    a: sheet.a?.copyWith(fontSize: fontSize),
-    em: sheet.em?.copyWith(fontSize: fontSize),
-    strong: sheet.strong?.copyWith(fontSize: fontSize),
-    del: sheet.del?.copyWith(fontSize: fontSize),
-    blockquote: sheet.blockquote?.copyWith(fontSize: fontSize),
-    blockquoteDecoration: BoxDecoration(
-      color: PlatformX.isDarkMode ? Colors.blue.shade800 : Colors.blue.shade100,
-      borderRadius: BorderRadius.circular(2.0),
-    ),
-    listBullet: sheet.listBullet?.copyWith(fontSize: fontSize),
-    checkbox: sheet.checkbox?.copyWith(fontSize: fontSize),
-  );
+MarkdownConfig _markdownConfigOverride(
+    MarkdownConfig config, double? fontSize) {
+  return config
+      .copy(configs: [PConfig(textStyle: TextStyle(fontSize: fontSize))]);
 }
 
 /// Markdown render creator.
@@ -94,8 +90,52 @@ final kMarkdownRenderFactory = (double? defaultFontSize) =>
         bool translucentCard,
         bool isPreviewWidget) {
       double imageWidth = ViewportUtils.getMainNavigatorWidth(context) * 0.75;
+      ImgBuilder imageBuilder = (uri, attr) {
+        String url = uri.toString();
+        // render stickers first
+        if (url.startsWith("danxi_")) {
+          // backward compatibility: <=1.4.3, danxi_ is used; after that, dx_ is used
+          url = url.replaceFirst("danxi_", "dx_");
+        }
+        if (url.startsWith("dx_")) {
+          var asset = getStickerAssetPath(url);
+          // print(asset);
+          if (asset != null) {
+            return Image.asset(
+              asset,
+              width: 50,
+              height: 50,
+            );
+          }
+        }
 
-      return MarkdownWidget(data: content!);
+        return Center(
+          child: AutoBBSImage(
+              key: UniqueKey(),
+              src: url,
+              maxWidth: imageWidth,
+              onTapImage: onTapImage),
+        );
+      };
+
+      return MarkdownBlock(
+        selectable: false,
+        data: content!,
+        config: _markdownConfigOverride(
+            _createMarkdownConfig(context,
+                imageBuilder: imageBuilder, onTapLink: onTapLink),
+            16),
+        generator: MarkdownGenerator(inlineSyntaxList: [
+          LatexInlineSyntax(),
+          LatexMultiLineSyntax(),
+          MentionSyntax()
+        ], generators: [
+          inlineLatexGenerator,
+          multiLineLatexGenerator,
+          floorMentionGenerator(translucentCard, isPreviewWidget),
+          holeMentionGenerator(translucentCard, isPreviewWidget)
+        ]),
+      );
 
       /*
       return MarkdownBody(
@@ -165,72 +205,118 @@ final BaseRender kPlainRender = (BuildContext context,
   );
 };
 
-class MarkdownLatexSupport extends MarkdownElementBuilder {
-  @override
-  Widget? visitElementAfter(md.Element element, TextStyle? preferredStyle) =>
-      SingleChildScrollView(
-          scrollDirection: Axis.horizontal,
-          child: Math.tex(element.textContent));
+SpanNodeGeneratorWithTag inlineLatexGenerator = SpanNodeGeneratorWithTag(
+    tag: LatexInlineSyntax.tag,
+    generator: (e, config, visitor) => MarkdownInlineLatexNode(e));
+
+SpanNodeGeneratorWithTag multiLineLatexGenerator = SpanNodeGeneratorWithTag(
+    tag: LatexMultiLineSyntax.tag,
+    generator: (e, config, visitor) => MarkdownMultiLineLatexNode(e));
+
+SpanNodeGeneratorWithTag holeMentionGenerator(
+        hasBackgroundImage, isPreviewWidget) =>
+    SpanNodeGeneratorWithTag(
+        tag: MentionSyntax.holeTag,
+        generator: (e, config, visitor) =>
+            MarkdownHoleMentionNode(e, hasBackgroundImage, isPreviewWidget));
+
+SpanNodeGeneratorWithTag floorMentionGenerator(
+        hasBackgroundImage, isPreviewWidget) =>
+    SpanNodeGeneratorWithTag(
+        tag: MentionSyntax.floorTag,
+        generator: (e, config, visitor) =>
+            MarkdownFloorMentionNode(e, hasBackgroundImage, isPreviewWidget));
+
+Widget _buildLatexWidget(String content) {
+  return SingleChildScrollView(
+    scrollDirection: Axis.horizontal,
+    child: Math.tex(content),
+  );
 }
 
-class MarkdownLatexMultiLineSupport extends MarkdownElementBuilder {
+WidgetSpan _toWidgetSpan(Widget widget) {
+  return WidgetSpan(
+    alignment: PlaceholderAlignment.middle,
+    child: widget,
+  );
+}
+
+class MarkdownInlineLatexNode extends SpanNode {
+  final md.Element element;
+  MarkdownInlineLatexNode(this.element);
+
   @override
-  Widget? visitElementAfter(md.Element element, TextStyle? preferredStyle) {
-    return Align(
-      alignment: Alignment.topCenter,
-      child: SingleChildScrollView(
-        scrollDirection: Axis.horizontal,
-        child: Math.tex(element.textContent),
+  InlineSpan build() {
+    return _toWidgetSpan(_buildLatexWidget(element.textContent));
+  }
+}
+
+class MarkdownMultiLineLatexNode extends SpanNode {
+  final md.Element element;
+  MarkdownMultiLineLatexNode(this.element);
+
+  @override
+  InlineSpan build() {
+    // Reference: https://github.com/asjqkkkk/markdown_widget/blob/dev/example/lib/markdown_custom/latex.dart
+    return _toWidgetSpan(
+      Container(
+        width: double.infinity,
+        margin: const EdgeInsets.symmetric(vertical: 16),
+        child: Center(child: _buildLatexWidget(element.textContent)),
       ),
     );
   }
 }
 
-class MarkdownFloorMentionSupport extends MarkdownElementBuilder {
+class MarkdownFloorMentionNode extends SpanNode {
   final bool hasBackgroundImage;
   final bool isPreviewWidget;
+  final md.Element element;
 
-  MarkdownFloorMentionSupport(this.hasBackgroundImage, this.isPreviewWidget);
+  MarkdownFloorMentionNode(
+      this.element, this.hasBackgroundImage, this.isPreviewWidget);
 
   @override
-  Widget? visitElementAfter(md.Element element, TextStyle? preferredStyle) {
+  InlineSpan build() {
     if (isPreviewWidget) {
-      return OTMentionPreviewWidget(
+      return _toWidgetSpan(OTMentionPreviewWidget(
         id: int.parse(element.textContent),
         type: OTMentionType.FLOOR,
         hasBackgroundImage: hasBackgroundImage,
-      );
+      ));
     } else {
-      return OTFloorMentionWidget(
+      return _toWidgetSpan(OTFloorMentionWidget(
         future: ForumRepository.getInstance()
             .loadSpecificFloor(int.parse(element.textContent)),
         hasBackgroundImage: hasBackgroundImage,
-      );
+      ));
     }
   }
 }
 
-class MarkdownHoleMentionSupport extends MarkdownElementBuilder {
+class MarkdownHoleMentionNode extends SpanNode {
   final bool hasBackgroundImage;
   final bool isPreviewWidget;
+  final md.Element element;
 
-  MarkdownHoleMentionSupport(this.hasBackgroundImage, this.isPreviewWidget);
+  MarkdownHoleMentionNode(
+      this.element, this.hasBackgroundImage, this.isPreviewWidget);
 
   @override
-  Widget? visitElementAfter(md.Element element, TextStyle? preferredStyle) {
+  InlineSpan build() {
     if (isPreviewWidget) {
-      return OTMentionPreviewWidget(
+      return _toWidgetSpan(OTMentionPreviewWidget(
         id: int.parse(element.textContent),
         type: OTMentionType.HOLE,
         hasBackgroundImage: hasBackgroundImage,
-      );
+      ));
     } else {
-      return OTFloorMentionWidget(
+      return _toWidgetSpan(OTFloorMentionWidget(
         future: ForumRepository.getInstance()
             .loadSpecificHole(int.parse(element.textContent))
             .then((value) => value?.floors?.first_floor),
         hasBackgroundImage: hasBackgroundImage,
-      );
+      ));
     }
   }
 }
@@ -241,55 +327,47 @@ final BaseRender kMarkdownSelectorRender = (BuildContext context,
     LinkTapCallback? onTapLink,
     bool translucentCard,
     bool isPreviewWidget) {
-  return SelectionArea(
-    child: Markdown(
-      softLineBreak: true,
-      data: content!,
-      styleSheet: _markdownStyleOverride(
-          _getMarkdownStyleSheetFromPlatform(context), kFontLargerSize),
-      onTapLink: (String text, String? href, String title) =>
-          onTapLink?.call(href),
-      imageBuilder: (Uri uri, String? title, String? alt) => nil,
-    ),
-  );
+  return MarkdownWidget(data: content!);
 };
 
-class LatexSyntax extends md.InlineSyntax {
-  LatexSyntax() : super(r'(?<!\$)\$([^\$]+?)\$(?!\$)');
+class LatexInlineSyntax extends md.InlineSyntax {
+  static const String tag = "tex";
+  LatexInlineSyntax() : super(r'(?<!\$)\$([^\$]+?)\$(?!\$)');
 
   @override
   bool onMatch(md.InlineParser parser, Match match) {
     var tex = match[1]!;
-    parser.addNode(md.Element.text("tex", tex));
+    parser.addNode(md.Element.text(tag, tex));
     return true;
   }
 }
 
 class LatexMultiLineSyntax extends md.InlineSyntax {
+  static const String tag = "texMultiLine";
   LatexMultiLineSyntax() : super(r'\$\$([^\$]*?)\$\$');
 
   @override
   bool onMatch(md.InlineParser parser, Match match) {
     var tex = match[1]!;
-    parser.addNode(md.Element("p", [md.Element.text("texLine", tex)]));
+    parser.addNode(md.Element.text(tag, tex));
     return true;
   }
 }
 
-const MENTION_REGEX_STRING = r'(#{1,2})([0-9]+)';
-
 class MentionSyntax extends md.InlineSyntax {
-  MentionSyntax() : super(MENTION_REGEX_STRING);
+  static const String holeTag = "holeMention";
+  static const String floorTag = "floorMention";
+  MentionSyntax() : super(r'(#{1,2})([0-9]+)');
 
   @override
   bool onMatch(md.InlineParser parser, Match match) {
     final type = match[1]!;
     final mention = match[2]!;
     if (type == "#") {
-      parser.addNode(md.Element.text("hole_mention", mention));
+      parser.addNode(md.Element.text(holeTag, mention));
       return true;
     } else if (type == "##") {
-      parser.addNode(md.Element.text("floor_mention", mention));
+      parser.addNode(md.Element.text(floorTag, mention));
       return true;
     }
     return false;
@@ -297,12 +375,13 @@ class MentionSyntax extends md.InlineSyntax {
 }
 
 class AuditSyntax extends md.InlineSyntax {
+  static const String tag = "mark";
   AuditSyntax() : super(r'<audit>([^\$]*?)</audit>');
 
   @override
   bool onMatch(md.InlineParser parser, Match match) {
     var sensitiveString = match[1]!;
-    parser.addNode(md.Element.text("mark", sensitiveString));
+    parser.addNode(md.Element.text(tag, sensitiveString));
     return true;
   }
 }
