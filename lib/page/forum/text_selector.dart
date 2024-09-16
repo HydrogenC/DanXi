@@ -50,10 +50,12 @@ class TextSelectorPageState extends State<TextSelectorPage> {
         appBar: PlatformAppBarX(
           title: Text(S.of(context).free_select),
         ),
-        body: PostRenderWidget(
-          render: kMarkdownSelectorRender,
-          content: widget.arguments!['text'],
-          hasBackgroundImage: false,
-        ));
+        body: Padding(
+            padding: const EdgeInsets.all(8),
+            child: PostRenderWidget(
+              render: kMarkdownSelectorRender,
+              content: widget.arguments!['text'],
+              hasBackgroundImage: false,
+            )));
   }
 }

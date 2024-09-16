@@ -66,7 +66,10 @@ MarkdownConfig _createMarkdownConfig(BuildContext context,
       ? MarkdownConfig.darkConfig
       : MarkdownConfig.defaultConfig;
   return baseConfig.copy(configs: [
-    LinkConfig(onTap: onTapLink, style: const TextStyle(color: Color(0xff0969da), decoration: null)),
+    const H1Config(style: TextStyle(fontSize: kFontLargerSize, fontWeight: FontWeight.normal)),
+    LinkConfig(
+        onTap: onTapLink,
+        style: const TextStyle(color: Color(0xff0969da), decoration: null)),
     if (imageBuilder != null) ImgConfig(builder: imageBuilder),
   ]);
 }
@@ -74,8 +77,12 @@ MarkdownConfig _createMarkdownConfig(BuildContext context,
 // Override the font size and background of blockquote
 MarkdownConfig _markdownConfigOverride(
     MarkdownConfig config, double? fontSize) {
-  return config
-      .copy(configs: [PConfig(textStyle: TextStyle(fontSize: fontSize))]);
+  return config.copy(configs: [
+    PConfig(textStyle: TextStyle(fontSize: fontSize)),
+    LinkConfig(
+        onTap: config.a.onTap,
+        style: config.a.style.copyWith(fontSize: fontSize)),
+  ]);
 }
 
 /// Markdown render creator.
@@ -124,7 +131,7 @@ final kMarkdownRenderFactory = (double? defaultFontSize) =>
         config: _markdownConfigOverride(
             _createMarkdownConfig(context,
                 imageBuilder: imageBuilder, onTapLink: onTapLink),
-            16),
+            defaultFontSize),
         generator: MarkdownGenerator(inlineSyntaxList: [
           LatexInlineSyntax(),
           LatexMultiLineSyntax(),
@@ -136,61 +143,23 @@ final kMarkdownRenderFactory = (double? defaultFontSize) =>
           holeMentionGenerator(translucentCard, isPreviewWidget)
         ]),
       );
-
-      /*
-      return MarkdownBody(
-    softLineBreak: true,
-    data: content!,
-    styleSheet: _markdownStyleOverride(
-            _getMarkdownStyleSheetFromPlatform(context), defaultFontSize),
-        onTapLink: (String text, String? href, String title) =>
-        onTapLink?.call(href),
-        inlineSyntaxes: [
-          LatexSyntax(),
-          LatexMultiLineSyntax(),
-          MentionSyntax(),
-          AuditSyntax()
-        ],
-        builders: {
-      'tex': MarkdownLatexSupport(),
-      'texLine': MarkdownLatexMultiLineSupport(),
-      'floor_mention':
-              MarkdownFloorMentionSupport(translucentCard, isPreviewWidget),
-          'hole_mention':
-              MarkdownHoleMentionSupport(translucentCard, isPreviewWidget),
-        },
-    imageBuilder: (Uri uri, String? title, String? alt) {
-          String url = uri.toString();
-          // render stickers first
-          if (url.startsWith("danxi_")) {
-            // backward compatibility: <=1.4.3, danxi_ is used; after that, dx_ is used
-            url = url.replaceFirst("danxi_", "dx_");
-          }
-          if (url.startsWith("dx_")) {
-            var asset = getStickerAssetPath(url);
-            // print(asset);
-        if (asset != null) {
-          return Image.asset(
-            asset,
-            width: 50,
-            height: 50,
-          );
-        }
-      }
-
-          return Center(
-            child: AutoBBSImage(
-                key: UniqueKey(),
-                src: url,
-                maxWidth: imageWidth,
-                onTapImage: onTapImage),
-          );
-        },
-      );
-      */
     };
 
 final BaseRender kMarkdownRender = kMarkdownRenderFactory(kFontSize);
+
+final BaseRender kMarkdownSelectorRender = (BuildContext context,
+    String? content,
+    ImageTapCallback? onTapImage,
+    LinkTapCallback? onTapLink,
+    bool translucentCard,
+    bool isPreviewWidget) {
+  return MarkdownWidget(
+    data: content!,
+    selectable: true,
+    config: _markdownConfigOverride(
+        _createMarkdownConfig(context, onTapLink: onTapLink), kFontLargerSize),
+  );
+};
 
 final BaseRender kPlainRender = (BuildContext context,
     String? content,
@@ -320,15 +289,6 @@ class MarkdownHoleMentionNode extends SpanNode {
     }
   }
 }
-
-final BaseRender kMarkdownSelectorRender = (BuildContext context,
-    String? content,
-    ImageTapCallback? onTapImage,
-    LinkTapCallback? onTapLink,
-    bool translucentCard,
-    bool isPreviewWidget) {
-  return MarkdownWidget(data: content!);
-};
 
 class LatexInlineSyntax extends md.InlineSyntax {
   static const String tag = "tex";
